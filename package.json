@@ -1,0 +1,17 @@
+{
+  "name": "wa-api",
+  "version": "1.0.0",
+  "main": "app.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node app.js"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@itsukichan/baileys": "^7.3.2",
+    "express": "^4.19.2",
+    "node-fetch": "^2.7.0",
+    "qrcode": "^1.5.4"
+  }
+}
