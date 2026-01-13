@@ -7,7 +7,6 @@ const sendImage = require("../controllers/whatsapp/send/sendImage");
 const sendAudio = require("../controllers/whatsapp/send/sendAudio");
 const sendVideo = require("../controllers/whatsapp/send/sendVideo");
 const sendDocument = require("../controllers/whatsapp/send/sendDocument");
-const sendPix = require("../controllers/whatsapp/send/sendPix");
 
 /**
  * Rotas para envio de mensagens
@@ -30,8 +29,5 @@ router.post("/send_video", auth, sendVideo);
 
 // POST /send_document - Enviar documento via WhatsApp (URL)
 router.post("/send_document", auth, sendDocument);
-
-// POST /send_pix - Enviar PIX interativo via WhatsApp
-router.post("/send_pix", auth, sendPix);
 
 module.exports = router;

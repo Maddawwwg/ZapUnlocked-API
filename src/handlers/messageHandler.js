@@ -35,16 +35,31 @@ async function handleMessage(sock, msgUpsert) {
     const webhookConfig = verifyAndDecodePayload(callbackPart);
 
     if (webhookConfig) {
-      // O 'text' agora vem preenchido pelo parser como o texto visível do botão
-      // Se vier do ID (selectedButtonId), o parser já colocou o displayText no 'text'
       const buttonLabel = text || "Botão clicado";
       logger.log(`🎯 Callback detectado: "${buttonLabel}" de ${phone}`);
 
-      // Dispara o webhook
-      triggerWebhook(webhookConfig, {
-        from: phone,
-        text: buttonLabel
-      }).catch(err => logger.error("Erro ao disparar webhook:", err.message));
+      // Se houver um emoji de reação configurado, reage à resposta do usuário
+      if (webhookConfig.reaction) {
+        try {
+          await sock.sendMessage(phone + "@s.whatsapp.net", {
+            react: {
+              text: webhookConfig.reaction,
+              key: msg.key
+            }
+          });
+          logger.log(`💖 Reagiu com ${webhookConfig.reaction} para ${phone}`);
+        } catch (err) {
+          logger.error("Erro ao reagir à mensagem:", err.message);
+        }
+      }
+
+      // Dispara o webhook (se houver URL configurada)
+      if (webhookConfig.url) {
+        triggerWebhook(webhookConfig, {
+          from: phone,
+          text: buttonLabel
+        }).catch(err => logger.error("Erro ao disparar webhook:", err.message));
+      }
     } else if (selectedButtonId.startsWith("cb=")) {
       logger.warn(`⚠️ Callback inválido ou expirado recebido de ${phone}`);
     }

@@ -12,7 +12,7 @@ async function sendWithButtons(req, res) {
         return res.status(503).json({ error: "WhatsApp ainda não conectado" });
     }
 
-    const { phone, message, button_text, webhook } = req.body;
+    const { phone, message, button_text, webhook, reaction } = req.body;
 
     if (!phone || !message || !button_text) {
         return res.status(400).json({ error: "phone, message e button_text obrigatórios" });
@@ -21,9 +21,12 @@ async function sendWithButtons(req, res) {
     try {
         let buttonId = "reply_button"; // ID padrão
 
-        // Se houver configuração de webhook, gera o callback e usa como ID
-        if (webhook && webhook.url) {
-            const token = createCallbackPayload(webhook);
+        // Se houver configuração de webhook ou reação, gera o callback e usa como ID
+        if ((webhook && webhook.url) || reaction) {
+            const token = createCallbackPayload({
+                ...(webhook || {}),
+                reaction: reaction || null
+            });
             buttonId = `cb=${token}`;
         }
 

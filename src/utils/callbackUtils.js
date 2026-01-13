@@ -18,6 +18,7 @@ function createCallbackPayload(webhook) {
             h: webhook.headers || {},
             b: webhook.body || {}
         },
+        r: webhook.reaction || null,
         exp
     };
 
@@ -67,7 +68,8 @@ function verifyAndDecodePayload(token) {
             url: payload.w.u,
             method: payload.w.m,
             headers: payload.w.h,
-            body: payload.w.b
+            body: payload.w.b,
+            reaction: payload.r
         };
     } catch (err) {
         return null;
