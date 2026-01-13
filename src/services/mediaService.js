@@ -110,11 +110,11 @@ async function convertToOgg(inputPath) {
 
     return new Promise((resolve, reject) => {
         ffmpeg(inputPath)
-            .toFormat("opus")
+            .toFormat("ogg")
+            .audioCodec("libopus")
             .audioChannels(1)
             .addOptions([
-                "-avoid_negative_ts make_zero",
-                "-acodec libopus"
+                "-avoid_negative_ts make_zero"
             ])
             .on("end", () => {
                 logger.log("✅ Conversão concluída com sucesso");
