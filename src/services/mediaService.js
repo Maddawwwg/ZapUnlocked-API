@@ -120,8 +120,10 @@ async function convertToOgg(inputPath) {
 
     return new Promise((resolve, reject) => {
         ffmpeg(inputPath)
-            .audioCodec("libopus")
+            .noVideo()
             .audioChannels(1)
+            .audioFrequency(48000)
+            .audioCodec("libopus")
             .toFormat("ogg")
             .addOptions([
                 "-avoid_negative_ts", "make_zero"
