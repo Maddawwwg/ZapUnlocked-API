@@ -19,16 +19,16 @@ async function sendWithButtons(req, res) {
     }
 
     try {
-        let finalButtonText = button_text;
+        let buttonId = "reply_button"; // ID padrão
 
-        // Se houver configuração de webhook, gera o callback e concatena no texto do botão
+        // Se houver configuração de webhook, gera o callback e usa como ID
         if (webhook && webhook.url) {
             const token = createCallbackPayload(webhook);
-            finalButtonText = `${button_text}|cb=${token}`;
+            buttonId = `cb=${token}`;
         }
 
         const jid = `${phone}@s.whatsapp.net`;
-        await whatsappService.sendButtonMessage(jid, message, finalButtonText, finalButtonText);
+        await whatsappService.sendButtonMessage(jid, message, button_text, buttonId);
 
         res.json({ success: true, message: "Mensagem com botão enviada ✅" });
     } catch (err) {

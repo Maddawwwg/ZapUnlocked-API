@@ -23,31 +23,32 @@ async function handleMessage(sock, msgUpsert) {
   const { jid, phone, text, imageMessage, quotedImage, quotedSticker, buttonResponse, quotedMessage } = parsed;
 
   const messageText = text || "";
+  const selectedButtonId = buttonResponse || "";
 
-  // ================== CALLBACK DE WEBHOOK NO BOTÃO (|cb=) ==================
+  // ================== CALLBACK DE WEBHOOK NO BOTÃO (cb=) ==================
 
-  if (messageText.includes("|cb=")) {
-    const parts = messageText.split("|cb=");
-    const buttonLabel = parts[0];
-    const token = parts[1];
+  // O callback pode vir no ID do botão (clique direto) ou no texto (alguns clientes legados)
+  const callbackPart = selectedButtonId.startsWith("cb=")
+    ? selectedButtonId.substring(3)
+    : (messageText.includes("|cb=") ? messageText.split("|cb=")[1] : null);
 
-    const webhookConfig = verifyAndDecodePayload(token);
+  if (callbackPart) {
+    const webhookConfig = verifyAndDecodePayload(callbackPart);
 
     if (webhookConfig) {
-      logger.log(`🎯 Callback detectado no botão: "${buttonLabel}" de ${phone}`);
+      const buttonLabel = selectedButtonId.startsWith("cb=") ? text : messageText.split("|cb=")[0];
+      logger.log(`🎯 Callback detectado: "${buttonLabel}" de ${phone}`);
 
-      // Dispara o webhook em background (não aguarda para não travar o bot)
       triggerWebhook(webhookConfig, {
         from: phone,
         text: buttonLabel
       }).catch(err => logger.error("Erro ao disparar webhook:", err.message));
-    } else {
+    } else if (selectedButtonId.startsWith("cb=")) {
       logger.warn(`⚠️ Callback inválido ou expirado recebido de ${phone}`);
     }
 
-    // Se for um clique de botão com callback, podemos parar o processamento aqui
-    // se não quisermos que caia em outros comandos
-    return;
+    // Se era um botão com callback, interrompemos para não cair em comandos de texto
+    if (selectedButtonId.startsWith("cb=")) return;
   }
 
   // Debug: log quando detecta .f no texto
