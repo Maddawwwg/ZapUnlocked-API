@@ -22,10 +22,10 @@ async function sendWithButtons(req, res) {
         let buttonId = "reply_button"; // ID padrão
 
         // Se houver configuração de webhook ou reação, gera o callback e usa como ID
-        if ((webhook && webhook.url) || reaction) {
+        if ((webhook && (webhook.url || webhook.reaction)) || reaction) {
             const token = createCallbackPayload({
                 ...(webhook || {}),
-                reaction: reaction || null
+                reaction: reaction || (webhook && webhook.reaction) || null
             });
             buttonId = `cb=${token}`;
         }
