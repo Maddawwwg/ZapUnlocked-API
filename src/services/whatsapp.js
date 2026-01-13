@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const {
   default: makeWASocket,
   useMultiFileAuthState,
@@ -279,26 +280,34 @@ async function logout() {
   // Aguarda 1 segundo para garantir que o SO liberou os file handles do Baileys
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  // Limpa o diretório de autenticação com lógica de retry (útil para EBUSY no Windows/Containers)
+  // Limpa o conteúdo do diretório de autenticação de forma granular
   if (fs.existsSync(AUTH_DIR)) {
-    let attempts = 0;
-    const maxAttempts = 3;
-
-    while (attempts < maxAttempts) {
-      try {
-        fs.rmSync(AUTH_DIR, { recursive: true, force: true });
-        logger.log("✅ Diretório de autenticação removido com sucesso");
-        break;
-      } catch (err) {
-        attempts++;
-        if (err.code === "EBUSY" && attempts < maxAttempts) {
-          logger.log(`⚠️ Diretório ocupado, tentando novamente (${attempts}/${maxAttempts})...`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } else {
-          logger.error("❌ Erro fatal ao remover diretório de autenticação:", err.message);
-          break;
+    try {
+      const files = fs.readdirSync(AUTH_DIR);
+      for (const file of files) {
+        const filePath = path.join(AUTH_DIR, file);
+        try {
+          fs.unlinkSync(filePath);
+          logger.log(`🗑️ Arquivo de sessão removido: ${file}`);
+        } catch (err) {
+          if (err.code === "EBUSY") {
+            logger.log(`⚠️ Arquivo ${file} ocupado, pulando...`);
+          } else {
+            logger.error(`❌ Erro ao remover ${file}:`, err.message);
+          }
         }
       }
+
+      // Tenta remover o diretório vazio no final (rmSync com recursive:true pode falhar se algum arquivo sobrou)
+      try {
+        fs.rmdirSync(AUTH_DIR);
+        logger.log("✅ Diretório de autenticação removido com sucesso");
+      } catch (err) {
+        // Se falhar o rmdir por estar ocupado, não é crítico se os arquivos (especialmente creds.json) saíram
+        logger.log("ℹ️ Diretório base não pôde ser removido (ocupado), mas arquivos internos foram processados.");
+      }
+    } catch (err) {
+      logger.error("❌ Erro ao ler diretório de autenticação:", err.message);
     }
   }
 
