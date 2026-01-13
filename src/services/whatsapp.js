@@ -148,7 +148,7 @@ async function sendAudioMessage(jid, audioPath, isPtt = false) {
   return await sock.sendMessage(jid, {
     audio: { url: audioPath },
     ptt: isPtt,
-    mimetype: "audio/ogg; codecs=opus"
+    mimetype: "audio/mp4"
   });
 }
 

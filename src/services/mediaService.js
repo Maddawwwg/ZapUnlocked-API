@@ -73,13 +73,17 @@ async function downloadMedia(url) {
 
         // Correções comuns
         if (extension === ".jpeg") extension = ".jpg";
-        if (extension === ".mpeg") extension = ".mp4";
-        if (extension === ".ogg") extension = ".opus"; // Para áudios fixos
+        if (extension === ".mpeg") {
+            // Se for audio/mpeg é MP3, se for video/mpeg é MP4 (geralmente)
+            extension = contentType.includes("audio") ? ".mp3" : ".mp4";
+        }
+        if (extension === ".ogg") extension = ".opus";
 
         const filename = `${crypto.randomUUID()}${extension}`;
         const filePath = path.join(TEMP_DIR, filename);
         const writer = fs.createWriteStream(filePath);
 
+        logger.log(`⏳ Gravando stream no arquivo: ${filename}...`);
         response.data.pipe(writer);
 
         return new Promise((resolve, reject) => {
@@ -89,6 +93,12 @@ async function downloadMedia(url) {
                 resolve(filePath);
             });
             writer.on("error", (err) => {
+                logger.error("❌ Erro no writer do stream:", err.message);
+                cleanupLocal(filePath);
+                reject(err);
+            });
+            response.data.on("error", (err) => {
+                logger.error("❌ Erro no stream de dados:", err.message);
                 cleanupLocal(filePath);
                 reject(err);
             });
@@ -110,11 +120,11 @@ async function convertToOgg(inputPath) {
 
     return new Promise((resolve, reject) => {
         ffmpeg(inputPath)
-            .toFormat("ogg")
             .audioCodec("libopus")
             .audioChannels(1)
+            .toFormat("ogg")
             .addOptions([
-                "-avoid_negative_ts make_zero"
+                "-avoid_negative_ts", "make_zero"
             ])
             .on("end", () => {
                 logger.log("✅ Conversão concluída com sucesso");
