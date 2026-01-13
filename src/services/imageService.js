@@ -17,6 +17,7 @@ const MAX_SIZE = 20 * 1024 * 1024; // 20 MB
  * @returns {Promise<string>} - Caminho local do arquivo salvo
  */
 async function downloadImage(url) {
+    logger.log(`🌐 Iniciando download da URL: ${url}`);
     try {
         const response = await axios({
             method: "get",

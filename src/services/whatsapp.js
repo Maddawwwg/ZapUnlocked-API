@@ -121,6 +121,7 @@ async function sendButtonMessage(jid, message, buttonText, buttonValue) {
  * @returns {Promise<Object>}
  */
 async function sendImageMessage(jid, imagePath, caption, viewOnce = false) {
+  logger.log(`📡 Chamando Baileys sendMessage para ${jid} (viewOnce: ${viewOnce})`);
   if (!sock || !isReady) {
     throw new Error("WhatsApp não está conectado");
   }
