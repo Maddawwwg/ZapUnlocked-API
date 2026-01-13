@@ -1,5 +1,14 @@
 # <img src="https://github.com/lipis/flag-icons/raw/refs/heads/main/flags/4x3/jp.svg" width="40"> ZapUnlocked-API 📲✨
 
+![ZapUnlocked-API Banner](https://github.com/zKauaFerreira/ZapUnlocked-API/raw/refs/heads/documentation/images/hero-dark.svg)
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/zKauaFerreira/ZapUnlocked-API?style=for-the-badge&logo=github&color=30A3E6" alt="Stars">
+  <img src="https://img.shields.io/github/forks/zKauaFerreira/ZapUnlocked-API?style=for-the-badge&logo=github&color=30A3E6" alt="Forks">
+  <img src="https://img.shields.io/github/repo-size/zKauaFerreira/ZapUnlocked-API?style=for-the-badge&logo=github&color=30A3E6" alt="Repo Size">
+  <img src="https://img.shields.io/github/license/zKauaFerreira/ZapUnlocked-API?style=for-the-badge&logo=github&color=30A3E6" alt="License">
+</p>
+
 ## ZapUnlocked-API とは何ですか？
 
 **ZapUnlocked-API** は、WhatsApp を強力な自動化ツールに変えるために設計された、プロフェッショナルで **100% 無料かつオープンソース** のソリューションです。**Baileys** エンジンをベースに構築されたこの API は、セッション管理、複雑なメディアの送信、インテリジェントなインタラクションの作成を、重いデータベースを必要とせずに行えるシンプルな REST インターフェースを提供します。
@@ -9,15 +18,18 @@
 
 ---
 
-## 🛠️ API スーパーパワー 🔥
+## 🚀 主要なルート
 
-- ✅ **回復力のある接続**: ブラウザ内の動的な自動更新システムを備えた安定した QR コード。
-- 📩 **完全なメッセージング**: テキスト、画像、ビデオ、ドキュメント（最大 2GB）、連絡先を送信します。
-- 🎙️ **インテリジェントなオーディオ**: iPhone のネイティブサポート（OGG Opus への自動変換）を備えた PTT（ボイスメッセージ）を送信します。
-- 🔘 **ステートレスなインタラクション**: ボタン ID 内に暗号化された Webhook コールバックを備えたカスタマイズ可能なボタン。
-- 💖 **自動リアクション**: ユーザーがボタンをクリックしたときに即座に反応するように絵文字を設定します。
-- 🔐 **強力なセキュリティ**: API キー（ヘッダーまたはクエリパラメータ）による認証と、セッションクリアを伴う安全なログアウト。
-- 🔄 **自動回復**: 切断を検出し、認証フローを自動的に再開するシステム。
+- `GET /` - API ステータス
+- `POST /send` - テキストメッセージの送信
+- `POST /send_wbuttons` - ボタン付きメッセージの送信
+- `POST /send_image` - 画像の送信
+- `POST /send_audio` - オーディオの送信
+- `POST /send_video` - ビデオの送信
+- `POST /send_document` - ドキュメントの送信
+- `GET /qr` - QR コードを表示
+- `GET /qr/image` - QR コード画像を生成
+- `POST /qr/logout` - セッションをログアウト
 
 ---
 
@@ -25,17 +37,16 @@
 
 この API は、**Railway** を通じて **完全に無料** でホストできるように最適化されています。Free プランの活用により、サーバー費用をかけずにボットを 24 時間 365 日オンラインに保つことができます。
 
-👉 **[Railway セットアップガイドはこちら](../RAILWAY_SETUP.md)**
+👉 **[Railway セットアップガイドはこちら](https://zapdocs.kauafpss.qzz.io/essentials/quickstart)**
 
 ---
 
-## 📖 完全なドキュメント
+## 📖 公式ドキュメント
 
-GitHub を整理しておくために、詳細な技術ドキュメント（エンドポイント、パラメータ、コード例）は公式ウェブサイトに移動しています。
+詳細な技術ドキュメント、コード例、インタラクティブなプレイグラウンドについては、公式ウェブサイトをご覧ください。
 
-👉 **[ドキュメントサイトにアクセス（近日公開）]()**
+👉 **[公式ドキュメントにアクセス](https://zapdocs.kauafpss.qzz.io)**
 
-*(サイトの準備ができるまでは、引き続きローカルファイル [API_DOCUMENTATION.md](../API_DOCUMENTATION.md) を参照してください)*
 
 ---
 
@@ -46,6 +57,12 @@ GitHub を整理しておくために、詳細な技術ドキュメント（エ�
 - **[Itsukichan](https://github.com/itsukichan/baileys)**: インタラクティブなボタンの使用を可能にする素晴らしい Baileys フォークに感謝します。
 - **[Baileys (WhiskeySockets)](https://github.com/WhiskeySockets/Baileys)**: WhatsApp との接続に革命を起こしたベースライブラリ。
 - **[Railway](https://railway.app/)**: 高品質な無料インフラ（Free プランで 1 vCPU、0.5GB RAM、500MB ストレージ）の提供に感謝します。
+
+---
+
+## 📄 ライセンス
+
+このプロジェクトは **MIT ライセンス** の下でライセンスされています。コードの使用、修正、配布は自由に行っていただけます。詳細については、[LICENSE](https://github.com/zKauaFerreira/ZapUnlocked-API/blob/main/LICENSE) ファイルを参照してください。
 
 ---
 

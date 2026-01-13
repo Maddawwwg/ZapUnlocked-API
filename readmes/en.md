@@ -1,5 +1,14 @@
 # <img src="https://github.com/lipis/flag-icons/raw/refs/heads/main/flags/4x3/us.svg" width="40"> ZapUnlocked-API 📲✨
 
+![ZapUnlocked-API Banner](https://github.com/zKauaFerreira/ZapUnlocked-API/raw/refs/heads/documentation/images/hero-dark.svg)
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/zKauaFerreira/ZapUnlocked-API?style=for-the-badge&logo=github&color=30A3E6" alt="Stars">
+  <img src="https://img.shields.io/github/forks/zKauaFerreira/ZapUnlocked-API?style=for-the-badge&logo=github&color=30A3E6" alt="Forks">
+  <img src="https://img.shields.io/github/repo-size/zKauaFerreira/ZapUnlocked-API?style=for-the-badge&logo=github&color=30A3E6" alt="Repo Size">
+  <img src="https://img.shields.io/github/license/zKauaFerreira/ZapUnlocked-API?style=for-the-badge&logo=github&color=30A3E6" alt="License">
+</p>
+
 ## What is ZapUnlocked-API?
 
 **ZapUnlocked-API** is a professional, **100% free and open-source** solution designed to transform WhatsApp into a powerful automation tool. Built on top of the **Baileys** engine, this API provides a simple REST interface to manage sessions, send complex media, and create intelligent interactions without the need for a heavy database.
@@ -9,15 +18,18 @@
 
 ---
 
-## 🛠️ API Superpowers 🔥
+## 🚀 Main Routes
 
-- ✅ **Resilient Connection**: Stable QR Code with dynamic auto-refresh system in the browser.
-- 📩 **Complete Messaging**: Send text, images, videos, documents (up to 2GB), and contacts.
-- 🎙️ **Intelligent Audio**: Send PTT (voice messages) with native iPhone support (automatic conversion to OGG Opus).
-- 🔘 **Stateless Interactivity**: Customizable buttons with encrypted Webhook callbacks inside the button ID.
-- 💖 **Automatic Reactions**: Set up emojis to react instantly when a user clicks a button.
-- 🔐 **Robust Security**: Authentication via API Key (Headers or Query Params) and secure logout with session clearing.
-- 🔄 **Auto-Recovery**: System that detects disconnections and restarts the authentication flow automatically.
+- `GET /` - API Status
+- `POST /send` - Send Text Message
+- `POST /send_wbuttons` - Send Message with Buttons
+- `POST /send_image` - Send Image
+- `POST /send_audio` - Send Audio
+- `POST /send_video` - Send Video
+- `POST /send_document` - Send Document
+- `GET /qr` - View QR Code
+- `GET /qr/image` - Get QR Code Image
+- `POST /qr/logout` - Logout Session
 
 ---
 
@@ -25,17 +37,16 @@
 
 This API has been optimized to be hosted **completely for free** through **Railway**. Take advantage of the Free plan resources to keep your bot online 24/7 with no server costs.
 
-👉 **[Click here to see the Railway setup guide](../RAILWAY_SETUP.md)**
+👉 **[Click here to see the Railway setup guide](https://zapdocs.kauafpss.qzz.io/essentials/quickstart)**
 
 ---
 
-## 📖 Full Documentation
+## 📖 Official Documentation
 
-To keep GitHub organized, detailed technical documentation (endpoints, parameters, and code examples) is being moved to our official website.
+For detailed technical documentation, code examples, and interactive playground, visit our official website.
 
-👉 **[Access the Documentation Site (Coming Soon)]()**
+👉 **[Access the Official Documentation](https://zapdocs.kauafpss.qzz.io)**
 
-*(Until the site is ready, you can still refer to the local file [API_DOCUMENTATION.md](../API_DOCUMENTATION.md))*
 
 ---
 
@@ -46,6 +57,12 @@ This project is only possible thanks to the amazing work of the open-source comm
 - **[Itsukichan](https://github.com/itsukichan/baileys)**: For the fantastic Baileys fork that enables the use of interactive buttons.
 - **[Baileys (WhiskeySockets)](https://github.com/WhiskeySockets/Baileys)**: The base library that revolutionized connecting with WhatsApp.
 - **[Railway](https://railway.app/)**: For providing high-quality free infrastructure (1 vCPU, 0.5GB RAM, and 500MB storage in the Free plan).
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**. Feel free to use, modify, and distribute the code. For more details, see the [LICENSE](https://github.com/zKauaFerreira/ZapUnlocked-API/blob/main/LICENSE) file.
 
 ---
 
