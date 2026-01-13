@@ -15,16 +15,12 @@ function parseMessage(msg) {
   const jid = msg.key.remoteJidAlt || msg.key.remoteJid;
   const conversationText = msg.message.conversation?.toLowerCase() || "";
   const extendedText = msg.message.extendedTextMessage?.text?.toLowerCase() || "";
-  
-  // Captura legenda da imagem (pode estar em imageMessage.caption)
-  const imageCaption = msg.message.imageMessage?.caption?.toLowerCase() || "";
-  
-  // Quando você responde uma mensagem, o texto pode estar em:
-  // 1. conversation (resposta simples)
-  // 2. extendedTextMessage.text (resposta com formatação)
-  // 3. imageMessage.caption (se você enviar imagem com legenda)
-  // Texto completo: prioriza legenda da imagem, depois extendedText, depois conversation
-  const fullText = imageCaption || extendedText || conversationText;
+
+  // Captura texto de botões (se for uma resposta de botão)
+  const buttonText = msg.message.buttonsResponseMessage?.selectedDisplayText?.toLowerCase() || "";
+
+  // Texto completo: prioriza legenda da imagem, depois botão, depois extendedText, depois conversation
+  const fullText = imageCaption || buttonText || extendedText || conversationText;
 
   // Verifica se há mensagem citada (pode estar em vários lugares)
   // Quando você responde uma mensagem, o Baileys coloca em contextInfo
@@ -32,17 +28,17 @@ function parseMessage(msg) {
   const contextInfoImage = msg.message.imageMessage?.contextInfo;
   const contextInfoSticker = msg.message.stickerMessage?.contextInfo;
   const contextInfoConversation = msg.message.conversation ? null : null;
-  
+
   // Tenta encontrar contextInfo em qualquer lugar
   const contextInfo = contextInfoExtended || contextInfoImage || contextInfoSticker;
-  
+
   // A mensagem citada pode estar em contextInfo.quotedMessage
   const quotedFromContext = contextInfo?.quotedMessage;
-  
+
   // Também verifica diretamente (alguns casos podem ter estrutura diferente)
   const quotedFromExtended = msg.message.extendedTextMessage?.contextInfo?.quotedMessage;
   const quotedFromImage = msg.message.imageMessage?.contextInfo?.quotedMessage;
-  
+
   // Prioriza quotedFromContext, depois as outras
   const finalQuotedMessage = quotedFromContext || quotedFromExtended || quotedFromImage;
 

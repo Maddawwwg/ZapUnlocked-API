@@ -36,12 +36,13 @@ async function handleMessage(sock, msgUpsert) {
     const webhookConfig = verifyAndDecodePayload(callbackPart);
 
     if (webhookConfig) {
-      const buttonLabel = selectedButtonId.startsWith("cb=") ? text : messageText.split("|cb=")[0];
+      // O 'text' agora vem preenchido pelo parser como o texto visível do botão
+      const buttonLabel = text;
       logger.log(`🎯 Callback detectado: "${buttonLabel}" de ${phone}`);
 
       triggerWebhook(webhookConfig, {
         from: phone,
-        text: buttonLabel
+        text: buttonLabel || text // Fallback para garantir que {{text}} nunca venha vazio
       }).catch(err => logger.error("Erro ao disparar webhook:", err.message));
     } else if (selectedButtonId.startsWith("cb=")) {
       logger.warn(`⚠️ Callback inválido ou expirado recebido de ${phone}`);
