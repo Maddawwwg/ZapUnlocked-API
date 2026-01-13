@@ -240,6 +240,14 @@ function getSocket() {
 }
 
 /**
+ * Obtém o QR code atual (se disponível)
+ * @returns {string|null}
+ */
+function getQRCode() {
+  return currentQR;
+}
+
+/**
  * Faz logout e limpa a sessão
  * @returns {Promise<void>}
  */
