@@ -1,5 +1,4 @@
 const { parseMessage, shouldIgnoreMessage } = require("../utils/messageParser");
-const { createStickerFromImage, convertStickerToImage } = require("./stickerHandler");
 const { verifyAndDecodePayload } = require("../utils/callbackUtils");
 const { triggerWebhook } = require("../services/webhookService");
 const logger = require("../utils/logger");
@@ -20,7 +19,7 @@ async function handleMessage(sock, msgUpsert) {
   const parsed = parseMessage(msg);
   if (!parsed) return;
 
-  const { jid, phone, text, imageMessage, quotedImage, quotedSticker, buttonResponse, quotedMessage } = parsed;
+  const { phone, text, buttonResponse } = parsed;
 
   const messageText = text || "";
   const selectedButtonId = buttonResponse || "";
@@ -37,52 +36,22 @@ async function handleMessage(sock, msgUpsert) {
 
     if (webhookConfig) {
       // O 'text' agora vem preenchido pelo parser como o texto visível do botão
-      const buttonLabel = text;
+      // Se vier do ID (selectedButtonId), o parser já colocou o displayText no 'text'
+      const buttonLabel = text || "Botão clicado";
       logger.log(`🎯 Callback detectado: "${buttonLabel}" de ${phone}`);
 
+      // Dispara o webhook
       triggerWebhook(webhookConfig, {
         from: phone,
-        text: buttonLabel || text // Fallback para garantir que {{text}} nunca venha vazio
+        text: buttonLabel
       }).catch(err => logger.error("Erro ao disparar webhook:", err.message));
     } else if (selectedButtonId.startsWith("cb=")) {
       logger.warn(`⚠️ Callback inválido ou expirado recebido de ${phone}`);
     }
 
-    // Se era um botão com callback, interrompemos para não cair em comandos de texto
-    if (selectedButtonId.startsWith("cb=")) return;
-  }
-
-  // Debug: log quando detecta .f no texto
-  if (text.includes(".f")) {
-    logger.log(`🔍 Debug .f: text="${text}", hasImage=${!!imageMessage}, hasQuoted=${!!quotedMessage}, hasQuotedImage=${!!quotedImage}`);
-  }
-
-  // ================== COMANDO .f (Criar Figurinha) ==================
-
-  // Caso 1: Imagem com legenda contendo .f (ex: "minha foto .f" ou apenas ".f")
-  // Verifica se há imagem na mensagem atual E se o texto contém .f
-  if (imageMessage && text.includes(".f")) {
-    logger.log("✅ Caso 1: Imagem com .f na legenda");
-    await createStickerFromImage(sock, jid, msg, imageMessage, false);
+    // Se era um botão com callback, interrompemos aqui.
     return;
   }
-
-  // Caso 2: Responder qualquer mensagem com .f
-  // Quando você responde, verifica se há mensagem citada que é uma imagem
-  // E se o texto da resposta contém .f
-  if (quotedMessage && quotedImage && text.includes(".f")) {
-    logger.log("✅ Caso 2: Resposta com .f para imagem citada");
-    await createStickerFromImage(sock, jid, msg, quotedImage, true);
-    return;
-  }
-
-  // ================== COMANDO .t (Converter Figurinha em Foto) ==================
-
-  if (quotedSticker && text === ".t") {
-    await convertStickerToImage(sock, jid, msg, quotedSticker);
-    return;
-  }
-
 }
 
 module.exports = { handleMessage };
