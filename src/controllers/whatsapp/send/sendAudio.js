@@ -2,6 +2,7 @@ const whatsappService = require("../../../services/whatsapp");
 const mediaService = require("../../../services/mediaService");
 const mediaQueue = require("../../../services/mediaQueue");
 const logger = require("../../../utils/logger");
+const path = require("path");
 
 /**
  * Envia áudio via WhatsApp baixando de uma URL
