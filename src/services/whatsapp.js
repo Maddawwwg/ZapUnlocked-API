@@ -58,7 +58,8 @@ async function startBot() {
           logger.log(`🔄 Tentando reconectar em ${RECONNECT_DELAY / 1000}s...`);
           setTimeout(startBot, RECONNECT_DELAY);
         } else {
-          logger.error("❌ Sessão inválida, precisa gerar novamente");
+          logger.error("❌ Sessão inválida (401), limpando e reiniciando...");
+          logout(); // Chama o processo robusto de logout para pedir novo QR
         }
       }
     });
