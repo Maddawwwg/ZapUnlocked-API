@@ -43,18 +43,15 @@ async function sendAudio(req, res) {
                     "audio/mpeg"
                 );
             } else {
-                // Se não for .ogg, converte antes de enviar como áudio/ptt
-                const ext = path.extname(filePath).toLowerCase();
+                // Sempre converte para OGG/Opus para garantir compatibilidade total (especialmente iPhone)
                 let finalPath = filePath;
                 let convertedPath = null;
 
-                if (ext !== ".ogg" && ext !== ".opus") {
-                    try {
-                        convertedPath = await mediaService.convertToOgg(filePath);
-                        finalPath = convertedPath;
-                    } catch (err) {
-                        logger.error("⚠️ Falha na conversão, tentando enviar arquivo original...");
-                    }
+                try {
+                    convertedPath = await mediaService.convertToOgg(filePath);
+                    finalPath = convertedPath;
+                } catch (err) {
+                    logger.error("⚠️ Falha na conversão mandatória, tentando enviar arquivo original...");
                 }
 
                 // Envia como áudio (se ptt=true, aparece como mensagem de voz)

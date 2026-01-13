@@ -77,7 +77,7 @@ async function downloadMedia(url) {
             // Se for audio/mpeg é MP3, se for video/mpeg é MP4 (geralmente)
             extension = contentType.includes("audio") ? ".mp3" : ".mp4";
         }
-        if (extension === ".ogg") extension = ".opus";
+        if (extension === ".ogg") extension = ".ogg";
 
         const filename = `${crypto.randomUUID()}${extension}`;
         const filePath = path.join(TEMP_DIR, filename);
