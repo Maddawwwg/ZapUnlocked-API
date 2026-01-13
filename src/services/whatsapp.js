@@ -256,7 +256,7 @@ async function logout() {
 
   try {
     if (sock) {
-      // Tenta deslogar gentilmente se estiver conectado
+      // Caso esteja conectado, tenta encerrar a sessão no servidor
       if (isReady) {
         try {
           await sock.logout();
@@ -264,6 +264,7 @@ async function logout() {
           logger.log("⚠️ Erro ao tentar sock.logout() (provavelmente já desconectado)");
         }
       }
+      // Remove todos os listeners para evitar callbacks indesejados durante o cleanup
       sock.ev.removeAllListeners();
       sock = null;
     }
@@ -274,13 +275,29 @@ async function logout() {
   isReady = false;
   currentQR = null;
 
-  // Limpa o diretório de autenticação
+  // Aguarda 1 segundo para garantir que o SO liberou os file handles do Baileys
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // Limpa o diretório de autenticação com lógica de retry (útil para EBUSY no Windows/Containers)
   if (fs.existsSync(AUTH_DIR)) {
-    try {
-      fs.rmSync(AUTH_DIR, { recursive: true, force: true });
-      logger.log("✅ Diretório de autenticação removido com sucesso");
-    } catch (err) {
-      logger.error("❌ Erro ao remover diretório de autenticação:", err.message);
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      try {
+        fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+        logger.log("✅ Diretório de autenticação removido com sucesso");
+        break;
+      } catch (err) {
+        attempts++;
+        if (err.code === "EBUSY" && attempts < maxAttempts) {
+          logger.log(`⚠️ Diretório ocupado, tentando novamente (${attempts}/${maxAttempts})...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } else {
+          logger.error("❌ Erro fatal ao remover diretório de autenticação:", err.message);
+          break;
+        }
+      }
     }
   }
 
