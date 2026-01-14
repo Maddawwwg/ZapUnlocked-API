@@ -172,8 +172,12 @@ async function findMessage(jid, identifier, type = "id") {
                 text = content.videoMessage.caption || "";
             }
 
-            // Comparação exata (trim + case insensitive)
-            return text && text.trim().toLowerCase() === identifier.trim().toLowerCase();
+            // Comparação exata (trim + case insensitive + normalization)
+            // Normaliza para NFC para evitar erros de acentuação (ex: 'ã' vs 'a~')
+            const normText = (text || "").normalize("NFC").trim().toLowerCase();
+            const normId = identifier.normalize("NFC").trim().toLowerCase();
+
+            return normText === normId;
         });
     } else {
         // Busca pelo ID
