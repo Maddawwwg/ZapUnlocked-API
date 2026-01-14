@@ -156,9 +156,13 @@ async function convertToWebP(inputPath) {
 
     return new Promise((resolve, reject) => {
         ffmpeg(inputPath)
-            .size("512x512")
-            .aspect("1:1")
-            .autoPad(true, "transparent")
+            .outputOptions([
+                "-vcodec", "libwebp",
+                "-vf", "scale=512:512:force_original_aspect_ratio=decrease,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=black@0",
+                "-preset", "default",
+                "-an",
+                "-vsync", "0"
+            ])
             .toFormat("webp")
             .on("end", () => {
                 logger.log("✅ Conversão para WebP concluída com sucesso");
