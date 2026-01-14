@@ -60,10 +60,15 @@ function pruneStore() {
         // Limpa mensagens antigas de todos os chats no store
         for (const jid in store.messages) {
             const msgs = store.messages[jid];
-            if (msgs && msgs.length > MAX_MESSAGES_PER_CHAT) {
-                // Mantém apenas as últimas 100 mensagens
-                // Redefinimos o array para garantir que seja uma operação limpa
-                store.messages[jid] = msgs.slice(-MAX_MESSAGES_PER_CHAT);
+            if (msgs) {
+                if (Array.isArray(msgs) && msgs.length > MAX_MESSAGES_PER_CHAT) {
+                    store.messages[jid] = msgs.slice(-MAX_MESSAGES_PER_CHAT);
+                } else if (typeof msgs.length === "number" && msgs.length > MAX_MESSAGES_PER_CHAT) {
+                    // Caso seja algo que tenha .length mas use outros métodos para remoção (ex: KeyedDB)
+                    if (typeof msgs.splice === "function") {
+                        msgs.splice(0, msgs.length - MAX_MESSAGES_PER_CHAT);
+                    }
+                }
             }
         }
     } catch (err) {
@@ -146,17 +151,28 @@ async function startBot() {
                 const jid = m.key.remoteJid;
                 if (jid) {
                     // Fallback manual: garante que a mensagem entre no store
-                    // Se o bind estiver funcionando (o que deveria), este push será ignorado ou redundante
                     if (!store.messages[jid]) store.messages[jid] = [];
-                    const msgs = store.messages[jid];
-                    const exists = msgs.find(x => x.key.id === m.key.id);
 
-                    if (!exists) {
-                        msgs.push(m);
-                        // logger.log(`📥 [Fallback Store] Mensagem ${m.key.id} adicionada via upsert manual`);
+                    let msgs = store.messages[jid];
+
+                    // Garante que msgs seja um array antes de usar .find
+                    if (Array.isArray(msgs)) {
+                        const exists = msgs.find(x => x.key.id === m.key.id);
+                        if (!exists) {
+                            msgs.push(m);
+                        }
+                    } else if (msgs && typeof msgs.toArray === "function") {
+                        // Caso seja um KeyedDB ou estrutura similar do Baileys
+                        const allMsgs = msgs.toArray ? msgs.toArray() : [];
+                        const exists = allMsgs.find(x => x.key.id === m.key.id);
+                        if (!exists) {
+                            if (typeof msgs.insert === "function") {
+                                msgs.insert(m);
+                            }
+                        }
                     }
 
-                    const after = store.messages[jid].length;
+                    const after = store.messages[jid]?.length || 0;
                     logger.log(`📩 Evento UPSERT: ${jid} (fromMe: ${m.key.fromMe || "false"}). Msg no store depois: ${after}`);
                 }
 
