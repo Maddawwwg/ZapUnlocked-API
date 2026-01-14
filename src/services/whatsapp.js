@@ -243,8 +243,8 @@ async function sendStickerMessage(jid, stickerPath, pack, author) {
 
   // Cria o sticker com metadados usando wa-sticker-formatter
   const sticker = new Sticker(fs.readFileSync(stickerPath), {
-    pack: pack || "ZapUnlocked",
-    author: author || "API",
+    pack: pack || "",
+    author: author || "",
     type: StickerTypes.FULL,
     quality: 100
   });
