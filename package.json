@@ -1,6 +1,6 @@
 {
-  "name": "wa-api",
-  "version": "1.0.0",
+  "name": "zapunlocked-api",
+  "version": "1.5.1",
   "main": "app.js",
   "type": "commonjs",
   "scripts": {
