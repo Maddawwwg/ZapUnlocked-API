@@ -287,7 +287,7 @@
         const btnWipe = document.getElementById('btn-wipe');
         const timerInfo = document.querySelector('.timer-wrapper');
 
-        if (data.status === 'connected') {
+        if (data.status === 'connected' || (data.whatsapp === 'connected' && !data.qr)) {
           qrDisplay.style.display = 'none';
           timerInfo.style.display = 'none';
           statusContainer.innerHTML = `
@@ -309,6 +309,13 @@
           if (data.qr) {
             // Atualiza imagem do QR usando o endpoint de imagem + timestamp para evitar cache
             qrDisplay.innerHTML = `<img src="/qr/image?API_KEY=${apiKey}&t=${new Date().getTime()}" alt="QR Code">`;
+          } else {
+            // Caso esteja esperando QR code (ainda nao gerou)
+            qrDisplay.innerHTML = `
+               <div class="status-badge loading">
+                   <span class="pulse"></span>
+                   Gerando QR Code...
+               </div>`;
           }
         }
       } catch (error) {
@@ -316,48 +323,15 @@
       }
     }
 
-    async function logout(keepData) {
-      if (!apiKey) return;
-
-      const btnKeep = document.getElementById('btn-keep');
-      const btnWipe = document.getElementById('btn-wipe');
-
-      const confirmMsg = keepData
-        ? "Deseja sair e manter o histórico de conversas salvo?"
-        : "ATENÇÃO: Desconectar apagará TODO o histórico de conversas salvo. Tem certeza?";
-
-      if (!confirm(confirmMsg)) return;
-
-      // Loading state
-      btnKeep.disabled = true;
-      btnWipe.disabled = true;
-      if (keepData) btnKeep.innerHTML = "Saindo...";
-      else btnWipe.innerHTML = "Apagando...";
-
-      try {
-        await fetch(`/whatsapp/qr/logout?API_KEY=${apiKey}&keepData=${keepData}`, {
-          method: 'POST'
-        });
-
-        // Recarrega após um tempo
-        setTimeout(() => {
-          location.reload();
-        }, 4000);
-
-      } catch (error) {
-        alert("Erro ao desconectar: " + error.message);
-        btnKeep.disabled = false;
-        btnWipe.disabled = false;
-      }
-    }
+    // ... (rest of logic)
 
     // Loop de atualização
-    let timeLeft = 15;
+    let timeLeft = 3;
     setInterval(() => {
       timeLeft--;
       document.getElementById('timer').innerText = timeLeft + 's';
       if (timeLeft <= 0) {
-        timeLeft = 15;
+        timeLeft = 3;
         checkStatus(); // Pega novo QR ou Status
       }
     }, 1000);
