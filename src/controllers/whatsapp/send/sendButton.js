@@ -12,7 +12,7 @@ async function sendWithButtons(req, res) {
         return res.status(503).json({ error: "WhatsApp ainda não conectado" });
     }
 
-    const { phone, message, button_text, webhook, reaction } = req.body;
+    const { phone, message, button_text, webhook, reaction, quoted_id } = req.body;
 
     if (!phone || !message || !button_text) {
         return res.status(400).json({ error: "phone, message e button_text obrigatórios" });
@@ -31,7 +31,27 @@ async function sendWithButtons(req, res) {
         }
 
         const jid = `${phone}@s.whatsapp.net`;
-        await whatsappService.sendButtonMessage(jid, message, button_text, buttonId);
+        const options = {};
+
+        // Se houver quoted_id, tenta recuperar a mensagem do store
+        if (quoted_id) {
+            const store = whatsappService.getStore();
+            const quotedMsg = await store.loadMessage(jid, quoted_id);
+            if (quotedMsg) {
+                options.quoted = quotedMsg;
+            } else {
+                options.quoted = {
+                    key: {
+                        remoteJid: jid,
+                        fromMe: false,
+                        id: quoted_id
+                    },
+                    message: { conversation: "..." }
+                };
+            }
+        }
+
+        await whatsappService.sendButtonMessage(jid, message, button_text, buttonId, options);
 
         res.json({ success: true, message: "Mensagem com botão enviada ✅" });
     } catch (err) {

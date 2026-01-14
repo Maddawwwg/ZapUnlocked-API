@@ -30,6 +30,7 @@ function createApp() {
   app.use("/", routes);
   app.use("/", sendRoutes);
   app.use("/qr", qrRoutes);
+  app.use("/management", require("./routes/management"));
 
   return app;
 }

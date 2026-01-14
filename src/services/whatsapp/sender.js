@@ -7,19 +7,24 @@ const { getSock, isReady } = require("./client");
 /**
  * Envia uma mensagem de texto via WhatsApp
  */
-async function sendMessage(jid, message) {
+async function sendMessage(jid, message, options = {}) {
     const sock = getSock();
     if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
-    return await sock.sendMessage(jid, { text: message });
+
+    const messageOptions = { text: message };
+    if (options.quoted) messageOptions.quoted = options.quoted;
+
+    return await sock.sendMessage(jid, messageOptions);
 }
 
 /**
  * Envia uma mensagem com botão customizado
  */
-async function sendButtonMessage(jid, message, buttonText, buttonValue) {
+async function sendButtonMessage(jid, message, buttonText, buttonValue, options = {}) {
     const sock = getSock();
     if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
-    return await sock.sendMessage(jid, {
+
+    const messageOptions = {
         text: message,
         buttons: [
             {
@@ -29,7 +34,11 @@ async function sendButtonMessage(jid, message, buttonText, buttonValue) {
             }
         ],
         headerType: 1
-    });
+    };
+
+    if (options.quoted) messageOptions.quoted = options.quoted;
+
+    return await sock.sendMessage(jid, messageOptions);
 }
 
 /**
@@ -128,6 +137,25 @@ async function sendStickerMessage(jid, stickerPath, pack, author) {
     });
 }
 
+/**
+ * Envia uma reação para uma mensagem específica
+ */
+async function sendReaction(jid, messageId, emoji) {
+    const sock = getSock();
+    if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
+
+    return await sock.sendMessage(jid, {
+        react: {
+            text: emoji,
+            key: {
+                remoteJid: jid,
+                fromMe: false, // Reagindo a mensagens recebidas por padrão
+                id: messageId
+            }
+        }
+    });
+}
+
 module.exports = {
     sendMessage,
     sendButtonMessage,
@@ -135,5 +163,6 @@ module.exports = {
     sendAudioMessage,
     sendVideoMessage,
     sendDocumentMessage,
-    sendStickerMessage
+    sendStickerMessage,
+    sendReaction
 };

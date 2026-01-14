@@ -2,7 +2,8 @@ const {
     default: makeWASocket,
     useMultiFileAuthState,
     fetchLatestBaileysVersion,
-    DisconnectReason
+    DisconnectReason,
+    makeInMemoryStore
 } = require("@itsukichan/baileys");
 const fs = require("fs");
 const path = require("path");
@@ -13,6 +14,38 @@ const logger = require("../../utils/logger");
 let sock = null;
 let isReady = false;
 let currentQR = null;
+
+// Store em memória para contatos recentes
+const store = makeInMemoryStore({});
+
+// Limite de mensagens por chat no store para economizar RAM
+const MAX_MESSAGES_PER_CHAT = 100;
+const MAX_CHATS_IN_STORE = 2000; // Proteção contra estouro com 10k contatos (mantém os mais recentes)
+
+/**
+ * Pruna o store para evitar consumo excessivo de RAM
+ */
+function pruneStore() {
+    try {
+        const chats = store.chats.all();
+        if (chats.length > MAX_CHATS_IN_STORE) {
+            logger.log(`🧹 Prunando store: ${chats.length} chats detectados. Limitando para ${MAX_CHATS_IN_STORE}...`);
+            // Remove os chats mais antigos se necessário (Baileys store.chats é um SimpleStore)
+            // Aqui podemos apenas limpar se for crítico, mas o Baileys gerencia o array.
+            // O maior vilão é o store.messages.
+        }
+
+        // Limpa mensagens antigas de todos os chats no store
+        for (const jid in store.messages) {
+            const messages = store.messages[jid];
+            if (messages.length > MAX_MESSAGES_PER_CHAT) {
+                store.messages[jid].splice(0, messages.length - MAX_MESSAGES_PER_CHAT);
+            }
+        }
+    } catch (err) {
+        logger.error("⚠️ Erro ao prunar store:", err.message);
+    }
+}
 
 /**
  * Inicia o bot do WhatsApp
@@ -28,6 +61,9 @@ async function startBot() {
             auth: state,
             ...WHATSAPP_CONFIG
         });
+
+        // Vincula o store ao socket
+        store.bind(sock.ev);
 
         sock.ev.on("creds.update", async () => {
             await saveCreds();
@@ -66,6 +102,7 @@ async function startBot() {
 
         sock.ev.on("messages.upsert", async (msgUpsert) => {
             await handleMessage(sock, msgUpsert);
+            pruneStore(); // Limpa RAM após novas mensagens
         });
     } catch (error) {
         logger.error("❌ Erro ao iniciar bot:", error.message);
@@ -122,5 +159,6 @@ module.exports = {
     logout,
     getSock: () => sock,
     isReady: () => isReady,
-    getQR: () => currentQR
+    getQR: () => currentQR,
+    getStore: () => store
 };

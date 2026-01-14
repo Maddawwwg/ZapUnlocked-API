@@ -75,6 +75,29 @@ Envia qualquer tipo de arquivo (PDF, DOCX, ZIP, etc). Limite de 400MB configurad
 }
 ```
 
+### Enviar Figurinha/Sticker (via URL)
+`POST /send_sticker`
+
+Converte uma imagem em figurinha WebP (512x512) com suporte a metadados e modos de redimensionamento.
+
+**Body:**
+```json
+{
+  "phone": "555185867410",
+  "image_url": "https://exemplo.com/foto.jpg",
+  "pack": "Meu Pack",
+  "author": "Antigravity",
+  "resizeMode": "blur",
+  "blurIntensity": 30
+}
+```
+- `pack`: Nome do pacote (opcional).
+- `author`: Autor da figurinha (opcional).
+- `resizeMode`: Modos disponíveis: `pad` (padrão), `transparent`, `stretch`, `cover`, `contain`, `blur`.
+- `padColor`: Cor do fundo em modo `pad` (ex: `white`, `red`, `#FF0000`). Use `transparent` para sem fundo.
+- `blurIntensity`: Intensidade do desfoque no modo `blur` (1 a 100).
+
+
 ---
 
 ## 🚀 Endpoints de Mensagens
@@ -89,7 +112,8 @@ Envia uma mensagem simples para um número de WhatsApp.
 ```json
 {
   "phone": "5511999999999",
-  "message": "Sua mensagem aqui 💌"
+  "message": "Sua mensagem aqui 💌",
+  "quoted_id": "ID_DA_MENSAGEM_ANTERIOR" // Opcional: Para responder citando uma mensagem
 }
 ```
 
@@ -102,8 +126,10 @@ Envia uma mensagem contendo um botão interativo.
 - **Body (JSON):**
 ```json
 {
+  "phone": "5511999999999",
   "message": "Escolha uma opção:",
   "button_text": "Texto do Botão",
+  "quoted_id": "ID_DA_MENSAGEM", // Opcional
   "reaction": "💖", // Opcional: Emoji para reagir ao clique
   "webhook": {
     "url": "https://meuservico.com/webhook",
@@ -122,9 +148,28 @@ Envia uma mensagem contendo um botão interativo.
 }
 ```
 
+### 3️⃣ Reagir a uma Mensagem
+Envia um emoji de reação para uma mensagem específica através do ID.
+
+- **URL:** `/send_reaction`
+- **Método:** `POST`
+- **Autenticação:** Sim
+- **Body:**
+```json
+{
+  "phone": "5511999999999",
+  "messageId": "ABC123ID",
+  "emoji": "🔥"
+}
+```
+
+
 #### Placeholders Disponíveis no Body/Headers:
 - `{{from}}`: Número de quem clicou (ex: `5511999999999`).
-- `{{text}}`: Texto do botão (ex: `Texto do Botão`).
+- `{{phone}}`: Número consultado (usado em buscas de histórico).
+- `{{text}}`: Texto do botão ou metadados de busca.
+- `{{requested}}`: Quantidade de mensagens solicitadas no histórico.
+- `{{found}}`: Quantidade de mensagens encontradas no histórico.
 - `{{timestamp}}`: Data/hora atual (ISO format).
 
 ---
@@ -168,5 +213,39 @@ Verifica se o servidor e o WhatsApp estão online.
   "status": "online",
   "whatsapp": "connected",
   "timestamp": "2026-01-13T01:47:07.000Z"
+}
+```
+
+---
+
+## 🛠️ Endpoints de Gerenciamento & Histórico
+
+### 1️⃣ Buscar Histórico de Mensagens
+Busca mensagens diretamente dos servidores do WhatsApp (sem salvar no disco).
+
+- **URL:** `/management/fetch_messages`
+- **Método:** `POST`
+- **Body:**
+```json
+{
+  "phone": "5511999999999",
+  "limit": 50,
+  "type": "received", // "sent", "received" ou "all"
+  "webhook": { // Opcional
+    "url": "https://meuservico.com/webhook",
+    "method": "POST"
+  }
+}
+```
+
+### 2️⃣ Listar Contatos Recentes
+Retorna os chats que tiveram atividade na sessão atual (InMemoryStore).
+
+- **URL:** `/management/recent_contacts`
+- **Método:** `POST`
+- **Body:**
+```json
+{
+  "limit": 100
 }
 ```

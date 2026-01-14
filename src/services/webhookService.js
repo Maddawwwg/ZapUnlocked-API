@@ -16,6 +16,9 @@ async function triggerWebhook(config, context) {
             return data
                 .replace(/{{from}}/g, context.from || "")
                 .replace(/{{text}}/g, context.text || "")
+                .replace(/{{phone}}/g, context.phone || context.from || "")
+                .replace(/{{requested}}/g, context.requested || "0")
+                .replace(/{{found}}/g, context.found || "0")
                 .replace(/{{timestamp}}/g, timestamp);
         }
 

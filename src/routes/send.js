@@ -8,6 +8,7 @@ const sendAudio = require("../controllers/whatsapp/send/sendAudio");
 const sendVideo = require("../controllers/whatsapp/send/sendVideo");
 const sendDocument = require("../controllers/whatsapp/send/sendDocument");
 const sendSticker = require("../controllers/whatsapp/send/sendSticker");
+const sendReaction = require("../controllers/whatsapp/send/sendReaction");
 
 /**
  * Rotas para envio de mensagens
@@ -33,5 +34,8 @@ router.post("/send_document", auth, sendDocument);
 
 // POST /send_sticker - Enviar figurinha via WhatsApp (URL)
 router.post("/send_sticker", auth, sendSticker);
+
+// POST /send_reaction - Reagir a uma mensagem
+router.post("/send_reaction", auth, sendReaction);
 
 module.exports = router;
