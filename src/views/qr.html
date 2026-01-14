@@ -241,6 +241,25 @@
 
     <p class="timer-wrapper">Atualiza em: <span id="timer" class="timer">15s</span></p>
 
+    <!-- Seção de Pairing Code -->
+    <div id="pairing-section" style="margin-top: 20px; width: 100%;">
+      <button id="toggle-pair-btn" class="btn" onclick="togglePairing()"
+        style="background: rgba(255,255,255,0.1); margin-bottom: 15px;">
+        Usar Código de Pareamento
+      </button>
+
+      <div id="pairing-container" style="display: none; animation: slideUp 0.3s ease;">
+        <p style="margin-bottom: 10px; font-size: 14px;">Digite o número com código do país (ex: 5511...)</p>
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <input type="tel" id="pair-phone" placeholder="5511999999999"
+            style="padding: 10px; border-radius: 8px; border: 1px solid #444; background: #222; color: white; width: 70%;">
+          <button onclick="requestPairing()" class="btn"
+            style="width: auto; padding: 10px; background: var(--accent-color);">Ir</button>
+        </div>
+        <div id="pair-result" style="margin-top: 15px; min-height: 40px;"></div>
+      </div>
+    </div>
+
     <div class="actions">
       <!-- Botão: Sair mas Manter Dados -->
       <button id="btn-keep" class="btn btn-logout-keep" onclick="logout(true)" style="display: none;">
@@ -270,6 +289,7 @@
     }
 
     const apiKey = getApiKey();
+    let currentQRHash = null; // Armazena o hash/string do QR atual para evitar piscar
 
     async function checkStatus() {
       if (!apiKey) {
@@ -286,10 +306,13 @@
         const btnKeep = document.getElementById('btn-keep');
         const btnWipe = document.getElementById('btn-wipe');
         const timerInfo = document.querySelector('.timer-wrapper');
+        const pairingSection = document.getElementById('pairing-section');
 
         if (data.status === 'connected' || (data.whatsapp === 'connected' && !data.qr)) {
           qrDisplay.style.display = 'none';
           timerInfo.style.display = 'none';
+          pairingSection.style.display = 'none'; // Esconde pairing se conectado
+
           statusContainer.innerHTML = `
                         <div class="status-badge">
                             <span class="pulse"></span>
@@ -299,23 +322,29 @@
           // Mostra os botões de logout
           btnKeep.style.display = 'flex';
           btnWipe.style.display = 'flex';
+          currentQRHash = null; // Reset
         } else {
           statusContainer.innerHTML = '';
           btnKeep.style.display = 'none';
           btnWipe.style.display = 'none';
           timerInfo.style.display = 'block';
-          qrDisplay.style.display = 'flex';
 
+          // Lógica ANTI-BLINK: Só atualiza se o QR Code mudou
           if (data.qr) {
-            // Atualiza imagem do QR usando o endpoint de imagem + timestamp para evitar cache
-            qrDisplay.innerHTML = `<img src="/qr/image?API_KEY=${apiKey}&t=${new Date().getTime()}" alt="QR Code">`;
+            if (data.qr !== currentQRHash) {
+              currentQRHash = data.qr;
+              qrDisplay.innerHTML = `<img src="/qr/image?API_KEY=${apiKey}&t=${new Date().getTime()}" alt="QR Code">`;
+              qrDisplay.style.display = 'flex'; // Garante que volta a aparecer
+            }
           } else {
-            // Caso esteja esperando QR code (ainda nao gerou)
+            // Se não tem QR (e não está conectado), mostra "Gerando..."
+            currentQRHash = null;
             qrDisplay.innerHTML = `
                <div class="status-badge loading">
                    <span class="pulse"></span>
                    Gerando QR Code...
                </div>`;
+            qrDisplay.style.display = 'flex';
           }
         }
       } catch (error) {
@@ -323,13 +352,84 @@
       }
     }
 
-    // ... (rest of logic)
+    // --- Lógica Pairing Code ---
+    function togglePairing() {
+      const container = document.getElementById('pairing-container');
+      const btn = document.getElementById('toggle-pair-btn');
+      if (container.style.display === 'none') {
+        container.style.display = 'block';
+        btn.innerText = "Voltar para QR Code";
+        document.getElementById('qr-display').style.display = 'none';
+      } else {
+        container.style.display = 'none';
+        btn.innerText = "Usar Código de Pareamento";
+        document.getElementById('qr-display').style.display = 'flex';
+      }
+    }
+
+    async function requestPairing() {
+      const phone = document.getElementById('pair-phone').value;
+      const resultDiv = document.getElementById('pair-result');
+
+      if (!phone) {
+        alert("Digite o número com DDD!");
+        return;
+      }
+
+      resultDiv.innerHTML = '<span class="pulse"></span> Gerando código...';
+
+      try {
+        const res = await fetch(`/qr/pair?API_KEY=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          resultDiv.innerHTML = `
+                    <div style="margin-top:10px; font-size: 24px; letter-spacing: 2px; color: var(--success-color); font-weight:bold;">
+                        ${json.code}
+                    </div>
+                    <p style="font-size:12px; margin-top:5px; color:#ccc">Digite este código no seu WhatsApp</p>
+                `;
+        } else {
+          resultDiv.innerHTML = `<span style="color:var(--danger-color)">Erro: ${json.error}</span>`;
+        }
+      } catch (e) {
+        resultDiv.innerHTML = `<span style="color:var(--danger-color)">Erro na requisição.</span>`;
+      }
+    }
+
+    async function logout(keep) {
+      if (!confirm("Tem certeza?")) return;
+      try {
+        await fetch(`/qr/logout?API_KEY=${apiKey}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            keepData: keep
+          })
+        });
+        alert("Comando enviado! A página será atualizada em breve.");
+        location.reload();
+      } catch (e) {
+        alert("Erro ao enviar comando.");
+      }
+    }
 
     // Loop de atualização
     let timeLeft = 3;
     setInterval(() => {
       timeLeft--;
-      document.getElementById('timer').innerText = timeLeft + 's';
+      // Só atualiza timer visualmente se não estiver no modo Pairing
+      const pairingContainer = document.getElementById('pairing-container');
+      if (!pairingContainer || pairingContainer.style.display === 'none') {
+        document.getElementById('timer').innerText = timeLeft + 's';
+      }
+
       if (timeLeft <= 0) {
         timeLeft = 3;
         checkStatus(); // Pega novo QR ou Status
