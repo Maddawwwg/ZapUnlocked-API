@@ -1,4 +1,4 @@
-const { getSock } = require("../../services/whatsapp/client");
+const { getSock } = require("../../../services/whatsapp/client");
 const logger = require("../../utils/logger");
 
 /**
