@@ -180,7 +180,18 @@ Suporta variáveis de data/hora dinâmicas no recado.
 *   `{{day}}`, `{{mon}}`, `{{yea}}`: Dia, Mês, Ano
 *   `{{hou}}`, `{{min}}`, `{{sec}}`: Hora, Minuto, Segundo
 
-### 2️⃣ Bloquear/Desbloquear Usuário
+### 3️⃣ Alterar Meu Perfil (Nome e Foto)
+- **URL:** `/settings/profile`
+- **Método:** `POST`
+- **Body (Opcionais, envie ao menos um):**
+```json
+{
+  "name": "Novo Nome do Bot",
+  "newProfilePictureUrl": "https://exemplo.com/nova_foto.jpg"
+}
+```
+
+### 4️⃣ Bloquear/Desbloquear Usuário
 - **URL:** `/settings/block`
 - **Método:** `POST`
 - **Body:**
@@ -188,6 +199,36 @@ Suporta variáveis de data/hora dinâmicas no recado.
 {
   "phone": "5511999999999",
   "action": "block" // "block" ou "unblock"
+}
+```
+
+---
+
+## 👤 Informações de Contatos
+
+### 1️⃣ Obter Informações do Número
+Busca foto de perfil, recado (status) e dados comerciais.
+
+- **URL:** `/contacts/info`
+- **Método:** `POST`
+- **Body:**
+```json
+{
+  "phone": "5511999999999"
+}
+```
+**Retorno Exemplo:**
+```json
+{
+  "success": true,
+  "data": {
+    "phone": "5511999999999",
+    "jid": "5511999999999@s.whatsapp.net",
+    "profilePictureUrl": "https://...",
+    "status": "Busy",
+    "businessProfile": null,
+    "exists": true
+  }
 }
 ```
 
