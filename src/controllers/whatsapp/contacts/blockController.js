@@ -1,5 +1,5 @@
 const { getSock } = require("../../../services/whatsapp/client");
-const logger = require("../../utils/logger");
+const logger = require("../../../utils/logger");
 
 exports.blockUser = async (req, res) => {
     try {
