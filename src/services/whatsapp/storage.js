@@ -3,12 +3,12 @@ const path = require("path");
 const zlib = require("zlib");
 const { promisify } = require("util");
 const logger = require("../../utils/logger");
+const { DATA_DIR } = require("../../config/constants");
 
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
 
-// Diretórios de dados
-const DATA_DIR = path.join(process.cwd(), "data");
+// Diretórios de dados (via Constante centralizada)
 const CHATS_DIR = path.join(DATA_DIR, "chats");
 const INDEX_FILE = path.join(CHATS_DIR, "index.json");
 

@@ -1,14 +1,14 @@
 const fs = require("fs");
 const path = require("path");
-const { AUTH_DIR } = require("../../config/constants");
+const { DATA_DIR } = require("../../config/constants");
 
 /**
  * Retorna estatísticas FOCADAS APENAS na pasta data (chats, jsons)
  */
 const getVolumeStats = async (req, res) => {
     try {
-        // Foca apenas na pasta 'data' dentro do projeto
-        const dataDir = path.join(process.cwd(), "data");
+        // Foca apenas na pasta 'data' configurada (pode ser volume ou local)
+        const dataDir = DATA_DIR;
 
         // Garante que existe para nao quebrar
         if (!fs.existsSync(dataDir)) {
