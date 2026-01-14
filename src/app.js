@@ -32,6 +32,7 @@ function createApp() {
   app.use("/", sendRoutes);
   app.use("/qr", qrRoutes);
   app.use("/management", require("./routes/management"));
+  app.use("/settings", require("./routes/settings")); // Rotas de privacidade e bloqueio
 
   return app;
 }
