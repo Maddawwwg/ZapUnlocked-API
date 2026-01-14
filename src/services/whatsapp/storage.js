@@ -106,6 +106,79 @@ async function addMessageToHistory(phone, message) {
 }
 
 /**
+ * Adiciona múltiplas mensagens ao histórico de uma vez (Otimizado para History Sync)
+ * @param {Array} messages - Array de mensagens do Baileys
+ */
+async function bulkAddMessages(messages) {
+    if (!messages || messages.length === 0) return;
+
+    // Agrupa mensagens por telefone
+    const batch = {}; // { "555199...": [msg1, msg2] }
+
+    for (const m of messages) {
+        let jid = m.key.remoteJid;
+        if (!jid || jid === "status@broadcast") continue;
+
+        // Resolução básica de LID
+        if (jid.includes("@lid")) {
+            const phoneFromLid = resolvePhoneFromJid(jid);
+            if (phoneFromLid) {
+                // jid = `${phoneFromLid}@s.whatsapp.net`;
+            }
+        }
+
+        const phone = jid.split("@")[0];
+        if (!batch[phone]) batch[phone] = [];
+        batch[phone].push(m);
+    }
+
+    // Processa cada chat individualmente
+    for (const phone of Object.keys(batch)) {
+        const msgsToAdd = batch[phone];
+        const fileName = `${phone}.json.gz`;
+        const filePath = path.join(CHATS_DIR, fileName);
+        let history = [];
+
+        try {
+            if (fs.existsSync(filePath)) {
+                const buffer = fs.readFileSync(filePath);
+                const decompressed = await gunzip(buffer);
+                history = JSON.parse(decompressed.toString());
+            }
+
+            // Adiciona novas (evitando duplicatas)
+            const existingIds = new Set(history.map(m => m.key.id));
+
+            let hasChanges = false;
+            for (const m of msgsToAdd) {
+                if (!existingIds.has(m.key.id)) {
+                    history.push(m);
+                    existingIds.add(m.key.id);
+                    hasChanges = true;
+                }
+            }
+
+            if (hasChanges) {
+                // Ordena por timestamp
+                history.sort((a, b) => (a.messageTimestamp || 0) - (b.messageTimestamp || 0));
+
+                // Mantém limite
+                if (history.length > HISTORY_LIMIT) {
+                    history = history.slice(-HISTORY_LIMIT);
+                }
+
+                const stringified = JSON.stringify(history);
+                const compressed = await gzip(stringified);
+                fs.writeFileSync(filePath, compressed);
+            }
+
+        } catch (err) {
+            logger.error(`❌ Erro no Bulk Write para ${phone}:`, err.message);
+        }
+    }
+}
+
+/**
  * Recupera o histórico de mensagens descomprimido
  * @param {string} phone - Número do telefone (sem @s.whatsapp.net)
  * @returns {Array} Histórico de mensagens
@@ -136,16 +209,9 @@ async function getHistory(phone) {
 function resolvePhoneFromJid(jid) {
     if (!jid) return null;
 
-    // Se for @s.whatsapp.net, é direto
     if (jid.includes("@s.whatsapp.net")) {
         return jid.split("@")[0];
     }
-
-    // Se for LID, precisamos de uma estratégia de busca.
-    // Por enquanto, tentaremos ver se temos esse LID mapeado no índice de chats (se um dia foi salvo com metadados)
-    // Caso contrário, retornamos null e esperamos que o endpoint de contatos preencha isso.
-    // NOTA: O Client deve passar o mapeamento correto se tiver acesso ao Store do Baileys.
-
     return null;
 }
 
@@ -157,7 +223,6 @@ async function clearAllData() {
         if (fs.existsSync(CHATS_DIR)) {
             const files = fs.readdirSync(CHATS_DIR);
             for (const file of files) {
-                // Apaga tudo dentro de data/chats
                 fs.unlinkSync(path.join(CHATS_DIR, file));
             }
             logger.log("🧹 Todos os dados de histórico de chats foram apagados com sucesso.");
@@ -173,5 +238,6 @@ module.exports = {
     addMessageToHistory,
     getHistory,
     resolvePhoneFromJid,
-    clearAllData
+    clearAllData,
+    bulkAddMessages
 };

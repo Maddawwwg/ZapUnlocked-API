@@ -68,8 +68,10 @@ async function startBot() {
             logger.log("💾 Credenciais do WhatsApp atualizadas/salvas");
         });
 
-        sock.ev.on("messaging.history-set", ({ messages }) => {
+        sock.ev.on("messaging.history-set", async ({ messages }) => {
             logger.log(`📚 Sincronismo de histórico recebido: ${messages.length} mensagens.`);
+            await storage.bulkAddMessages(messages);
+            logger.log("✅ Histórico sincronizado e salvo no storage.");
         });
 
         // Captura reações via evento dedicado (messages.reaction)

@@ -3,12 +3,18 @@ const path = require("path");
 const { AUTH_DIR } = require("../../config/constants");
 
 /**
- * Retorna estatísticas de uso do volume (arquivos e pastas)
- * Ignora a pasta de autenticação
+ * Retorna estatísticas FOCADAS APENAS na pasta data (chats, jsons)
  */
 const getVolumeStats = async (req, res) => {
     try {
-        const rootDir = process.cwd();
+        // Foca apenas na pasta 'data' dentro do projeto
+        const dataDir = path.join(process.cwd(), "data");
+
+        // Garante que existe para nao quebrar
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+
         const stats = {
             totalSize: 0,
             fileCount: 0,
@@ -22,10 +28,6 @@ const getVolumeStats = async (req, res) => {
             for (const item of items) {
                 const fullPath = path.join(directory, item);
 
-                // Ignora nodes_modules, .git e a pasta de AUTH
-                if (fullPath.includes("node_modules") || fullPath.includes(".git")) continue;
-                if (fullPath === path.resolve(AUTH_DIR)) continue;
-
                 try {
                     const fileStat = fs.statSync(fullPath);
                     const isDirectory = fileStat.isDirectory();
@@ -35,7 +37,7 @@ const getVolumeStats = async (req, res) => {
                         folderContent.push({
                             name: item,
                             type: "folder",
-                            size: children.reduce((acc, curr) => acc + curr.size, 0), // Tamanho aproximado da pasta
+                            size: children.reduce((acc, curr) => acc + curr.size, 0),
                             children: children
                         });
                     } else {
@@ -47,22 +49,23 @@ const getVolumeStats = async (req, res) => {
                             size: fileStat.size
                         });
                     }
-                } catch (err) {
-                    // Ignora arquivos que não podem ser lidos (permissão, etc)
-                }
+                } catch (err) { }
             }
             return folderContent;
         }
 
-        stats.structure = scanDir(rootDir);
+        stats.structure = scanDir(dataDir);
 
-        // Formata tamanho total
+        // Formata tamanho total sempre em MB (ou KB se muito pequeno, mas usuario pediu foco em MB se possivel)
+        // O usuario pediu "mostra o totalSizeFormatted sempre como MB", mas vamos fazer algo inteligente:
+        // Se < 1 MB, mostra em KB pra não ficar "0.00 MB". Acima disso, MB.
         const formatSize = (bytes) => {
-            if (bytes === 0) return "0 B";
-            const k = 1024;
-            const sizes = ["B", "KB", "MB", "GB"];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+            if (bytes === 0) return "0.00 MB";
+            const mb = bytes / (1024 * 1024);
+            if (mb < 0.01) {
+                return (bytes / 1024).toFixed(2) + " KB";
+            }
+            return mb.toFixed(2) + " MB";
         };
 
         return res.json({
