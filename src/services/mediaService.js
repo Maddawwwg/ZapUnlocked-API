@@ -25,18 +25,26 @@ async function downloadMedia(url) {
     logger.log(`🌐 Iniciando download da URL: ${url}`);
 
     try {
+        const commonHeaders = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Language": "en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "Referer": "https://www.google.com/"
+        };
+
         // Primeiro tentamos obter o tamanho do arquivo via HEAD
         let contentLength = 0;
         try {
             const headResponse = await axios.head(url, {
-                headers: {
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                },
-                timeout: 5000
+                headers: commonHeaders,
+                timeout: 5000,
+                validateStatus: (status) => status < 400 // Aceita qualquer status abaixo de 400
             });
             contentLength = parseInt(headResponse.headers["content-length"] || 0);
         } catch (e) {
-            logger.log("⚠️ Falha ao obter Content-Length via HEAD, tentando via GET...");
+            logger.log(`⚠️ HEAD falhou (${e.message}), tentando via GET...`);
         }
 
         if (contentLength > MAX_SIZE) {
@@ -48,10 +56,7 @@ async function downloadMedia(url) {
             method: "get",
             url: url,
             responseType: "stream",
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "*/*"
-            },
+            headers: commonHeaders,
             timeout: 60000 // 60 segundos para downloads maiores
         });
 
