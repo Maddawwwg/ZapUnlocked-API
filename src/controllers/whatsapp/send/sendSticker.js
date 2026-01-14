@@ -1,5 +1,5 @@
 const whatsappService = require("../../../services/whatsapp");
-const mediaService = require("../../../services/mediaService");
+const mediaService = require("../../../services/media");
 const mediaQueue = require("../../../services/mediaQueue");
 const logger = require("../../../utils/logger");
 
@@ -9,7 +9,7 @@ const logger = require("../../../utils/logger");
  * @param {Object} res - Response
  */
 async function sendSticker(req, res) {
-    const { phone, image_url, pack, author } = req.body;
+    const { phone, image_url, pack, author, resizeMode, padColor, blurIntensity } = req.body;
     logger.log(`🔍 Request recebida em /send_sticker para ${phone}`);
 
     if (!whatsappService.getStatus()) {
@@ -33,7 +33,11 @@ async function sendSticker(req, res) {
 
             // 2. Converte para WebP (Sticker)
             logger.log(`🔄 Convertendo para sticker (${phone})...`);
-            stickerPath = await mediaService.convertToWebP(filePath);
+            stickerPath = await mediaService.convertToWebP(filePath, {
+                resizeMode,
+                padColor,
+                blurIntensity
+            });
 
             // 3. Envia pro WhatsApp
             logger.log(`📤 Enviando sticker para ${phone}...`);

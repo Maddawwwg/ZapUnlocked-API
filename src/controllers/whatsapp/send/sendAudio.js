@@ -1,5 +1,5 @@
 const whatsappService = require("../../../services/whatsapp");
-const mediaService = require("../../../services/mediaService");
+const mediaService = require("../../../services/media");
 const mediaQueue = require("../../../services/mediaQueue");
 const logger = require("../../../utils/logger");
 const path = require("path");

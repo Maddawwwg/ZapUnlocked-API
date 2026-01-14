@@ -1,0 +1,139 @@
+const fs = require("fs");
+const { getAudioDuration, getAudioWaveform } = require("baileys-original");
+const { Sticker, StickerTypes } = require("wa-sticker-formatter");
+const logger = require("../../utils/logger");
+const { getSock, isReady } = require("./client");
+
+/**
+ * Envia uma mensagem de texto via WhatsApp
+ */
+async function sendMessage(jid, message) {
+    const sock = getSock();
+    if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
+    return await sock.sendMessage(jid, { text: message });
+}
+
+/**
+ * Envia uma mensagem com botão customizado
+ */
+async function sendButtonMessage(jid, message, buttonText, buttonValue) {
+    const sock = getSock();
+    if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
+    return await sock.sendMessage(jid, {
+        text: message,
+        buttons: [
+            {
+                buttonId: buttonValue,
+                buttonText: { displayText: buttonText },
+                type: 1
+            }
+        ],
+        headerType: 1
+    });
+}
+
+/**
+ * Envia uma imagem
+ */
+async function sendImageMessage(jid, imagePath, caption) {
+    const sock = getSock();
+    if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
+    return await sock.sendMessage(jid, {
+        image: fs.readFileSync(imagePath),
+        caption: caption
+    });
+}
+
+/**
+ * Envia um áudio
+ */
+async function sendAudioMessage(jid, audioPath, isPtt = false) {
+    const sock = getSock();
+    if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
+
+    const buffer = fs.readFileSync(audioPath);
+    let seconds = undefined;
+    let waveform = undefined;
+
+    try {
+        seconds = await getAudioDuration(buffer);
+        waveform = await getAudioWaveform(buffer);
+    } catch (err) {
+        logger.log(`⚠️ Falha ao gerar metadados de áudio: ${err.message}`);
+    }
+
+    return await sock.sendMessage(jid, {
+        audio: buffer,
+        ptt: isPtt,
+        mimetype: "audio/ogg; codecs=opus",
+        seconds: seconds,
+        waveform: waveform
+    });
+}
+
+/**
+ * Envia um vídeo
+ */
+async function sendVideoMessage(jid, videoPath, caption, asDocument = false, gifPlayback = false, ptv = false) {
+    const sock = getSock();
+    if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
+
+    const messageOptions = { caption: caption };
+
+    if (asDocument) {
+        messageOptions.document = fs.readFileSync(videoPath);
+        messageOptions.mimetype = "video/mp4";
+        messageOptions.fileName = `video_${Date.now()}.mp4`;
+    } else {
+        messageOptions.video = fs.readFileSync(videoPath);
+        messageOptions.gifPlayback = gifPlayback;
+        messageOptions.ptv = ptv;
+    }
+
+    return await sock.sendMessage(jid, messageOptions);
+}
+
+/**
+ * Envia um documento
+ */
+async function sendDocumentMessage(jid, filePath, fileName, mimetype) {
+    const sock = getSock();
+    if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
+
+    return await sock.sendMessage(jid, {
+        document: fs.readFileSync(filePath),
+        fileName: fileName,
+        mimetype: mimetype || "application/octet-stream"
+    });
+}
+
+/**
+ * Envia uma figurinha (sticker)
+ */
+async function sendStickerMessage(jid, stickerPath, pack, author) {
+    const sock = getSock();
+    if (!sock || !isReady()) throw new Error("WhatsApp não está conectado");
+
+    const sticker = new Sticker(fs.readFileSync(stickerPath), {
+        pack: pack || "",
+        author: author || "",
+        type: StickerTypes.FULL,
+        quality: 100
+    });
+
+    const buffer = await sticker.toBuffer();
+
+    return await sock.sendMessage(jid, {
+        sticker: buffer
+    });
+}
+
+module.exports = {
+    sendMessage,
+    sendButtonMessage,
+    sendImageMessage,
+    sendAudioMessage,
+    sendVideoMessage,
+    sendDocumentMessage,
+    sendStickerMessage
+};
