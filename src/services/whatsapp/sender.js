@@ -202,5 +202,6 @@ module.exports = {
     sendVideoMessage,
     sendDocumentMessage,
     sendStickerMessage,
-    sendReaction
+    sendReaction,
+    findMessage
 };

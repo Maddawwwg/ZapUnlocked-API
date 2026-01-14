@@ -12,6 +12,7 @@ function createApp() {
 
   // Middlewares
   app.use(express.json());
+  app.set("json spaces", 2); // Pretty-print JSON responses
 
   // Middleware para capturar erros de JSON malformado
   app.use((err, req, res, next) => {

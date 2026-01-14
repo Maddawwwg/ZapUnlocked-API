@@ -52,6 +52,14 @@ async function fetchMessages(jid, limit = 20, type = "all") {
             text = "[location_message]";
         } else if (m.message?.pollCreationMessage) {
             text = `[poll_message: ${m.message.pollCreationMessage.name}]`;
+        } else if (m.message?.reactionMessage) {
+            text = `[reaction: ${m.message.reactionMessage.text || "removida"}]`;
+        } else if (m.message?.buttonsMessage) {
+            text = m.message.buttonsMessage.contentText || "[button_message]";
+        } else if (m.message?.listMessage) {
+            text = m.message.listMessage.description || "[list_message]";
+        } else if (m.message?.templateMessage) {
+            text = m.message.templateMessage.hydratedTemplate?.hydratedContentText || "[template_message]";
         } else {
             text = `[${messageType}]`;
         }
@@ -69,11 +77,33 @@ async function fetchMessages(jid, limit = 20, type = "all") {
                 m.message?.videoMessage?.mimetype ||
                 m.message?.audioMessage?.mimetype ||
                 m.message?.documentMessage?.mimetype || null,
-            type: messageType
+            type: messageType,
+            hasButtons: !!(m.message?.buttonsMessage || m.message?.listMessage || m.message?.templateMessage || m.message?.buttonsResponseMessage),
+            reaction: m.message?.reactionMessage?.text || null
         };
     });
 
-    // Aplica filtro de tipo se necessário
+    // Filtros Avançados
+    const { onlyReactions, reactionEmoji, query, onlyButtons } = arguments[3] || {};
+
+    if (onlyReactions) {
+        formattedMessages = formattedMessages.filter(m => m.type === "reactionMessage");
+    }
+
+    if (reactionEmoji) {
+        formattedMessages = formattedMessages.filter(m => m.reaction === reactionEmoji);
+    }
+
+    if (query) {
+        const q = query.toLowerCase();
+        formattedMessages = formattedMessages.filter(m => m.text && m.text.toLowerCase().includes(q));
+    }
+
+    if (onlyButtons) {
+        formattedMessages = formattedMessages.filter(m => m.hasButtons);
+    }
+
+    // Aplica filtro de tipo se necessário (sent/received)
     if (type === "sent") {
         formattedMessages = formattedMessages.filter(m => m.fromMe);
     } else if (type === "received") {
@@ -104,15 +134,21 @@ function getRecentChats(limit = 20) {
     const chats = store.chats.all();
 
     const formattedChats = chats.map(c => {
-        // Extrai o número do JID (ex: 5551... ou o ID lid)
-        const phone = c.id.split("@")[0];
+        const store = client.getStore();
+        // Se for LID, tenta achar o JID real no store.contacts
+        let id = c.id;
+        let phone = id.split("@")[0];
+
+        // No Baileys, LID e JID são diferentes. Se for LID, o "nome" ou metadados podem estar no store.contacts
+        const contact = store.contacts[id];
+
         // Converte timestamp
         const timestamp = c.conversationTimestamp?.low || c.conversationTimestamp || null;
 
         return {
-            id: c.id,
+            id: id,
             phone: phone,
-            name: c.name || null,
+            name: c.name || contact?.name || contact?.verifiedName || contact?.notify || null,
             unreadCount: c.unreadCount || 0,
             lastMessageTimestamp: timestamp
         };

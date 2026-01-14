@@ -8,7 +8,7 @@ const logger = require("../../../utils/logger");
  * @param {Object} res - Response
  */
 async function fetchMessages(req, res) {
-    const { phone, limit, type, webhook } = req.body;
+    const { phone, limit, type, webhook, onlyReactions, reactionEmoji, query, onlyButtons } = req.body;
 
     if (!whatsappService.getStatus()) {
         return res.status(503).json({ error: "WhatsApp ainda não conectado" });
@@ -20,7 +20,8 @@ async function fetchMessages(req, res) {
 
     try {
         const jid = `${phone}@s.whatsapp.net`;
-        const result = await whatsappService.fetchMessages(jid, parseInt(limit) || 20, type || "all");
+        const filters = { onlyReactions, reactionEmoji, query, onlyButtons };
+        const result = await whatsappService.fetchMessages(jid, parseInt(limit) || 20, type || "all", filters);
 
         // Se houver webhook
         if (webhook && webhook.url) {
