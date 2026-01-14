@@ -54,14 +54,16 @@ function pruneStore() {
     try {
         const chats = store.chats.all();
         if (chats.length > MAX_CHATS_IN_STORE) {
-            logger.log(`🧹 Prunando store: ${chats.length} chats detectados. Limitando para ${MAX_CHATS_IN_STORE}...`);
+            // Apenas loga se houver excesso, o Baileys gerencia o store.chats.
         }
 
         // Limpa mensagens antigas de todos os chats no store
         for (const jid in store.messages) {
-            const messages = store.messages[jid];
-            if (messages.length > MAX_MESSAGES_PER_CHAT) {
-                store.messages[jid].splice(0, messages.length - MAX_MESSAGES_PER_CHAT);
+            const msgs = store.messages[jid];
+            if (msgs && msgs.length > MAX_MESSAGES_PER_CHAT) {
+                // Mantém apenas as últimas 100 mensagens
+                // Redefinimos o array para garantir que seja uma operação limpa
+                store.messages[jid] = msgs.slice(-MAX_MESSAGES_PER_CHAT);
             }
         }
     } catch (err) {
@@ -90,6 +92,10 @@ async function startBot() {
         sock.ev.on("creds.update", async () => {
             await saveCreds();
             logger.log("💾 Credenciais do WhatsApp atualizadas/salvas");
+        });
+
+        sock.ev.on("messaging.history-set", ({ messages }) => {
+            logger.log(`📚 Sincronismo de histórico recebido: ${messages.length} mensagens.`);
         });
 
         // Captura reações via evento dedicado (messages.reaction)
@@ -135,14 +141,31 @@ async function startBot() {
         });
 
         sock.ev.on("messages.upsert", async (msgUpsert) => {
-            // Também captura reações que chegam como mensagens normais (reactionMessage)
+            // Log para debug de mensagens em tempo real
             for (const m of msgUpsert.messages) {
+                const jid = m.key.remoteJid;
+                if (jid) {
+                    // Fallback manual: garante que a mensagem entre no store
+                    // Se o bind estiver funcionando (o que deveria), este push será ignorado ou redundante
+                    if (!store.messages[jid]) store.messages[jid] = [];
+                    const msgs = store.messages[jid];
+                    const exists = msgs.find(x => x.key.id === m.key.id);
+
+                    if (!exists) {
+                        msgs.push(m);
+                        // logger.log(`📥 [Fallback Store] Mensagem ${m.key.id} adicionada via upsert manual`);
+                    }
+
+                    const after = store.messages[jid].length;
+                    logger.log(`📩 Evento UPSERT: ${jid} (fromMe: ${m.key.fromMe || "false"}). Msg no store depois: ${after}`);
+                }
+
+                // Também captura reações que chegam como mensagens normais (reactionMessage)
                 const reaction = m.message?.reactionMessage;
                 if (reaction) {
                     const targetId = reaction.key?.id;
                     const emoji = reaction.text;
                     storeReaction(targetId, emoji);
-                    // logger.log(`🎭 Reação capturada (upsert): ${emoji} para msg ${targetId}`);
                 }
             }
 

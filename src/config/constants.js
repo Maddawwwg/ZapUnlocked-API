@@ -25,7 +25,7 @@ module.exports = {
   AUTH_DIR: authDir,
   TEMP_DIR: path.join(__dirname, "..", "..", "temp_media"),
   WHATSAPP_CONFIG: {
-    browser: ["Spotify Payments", "Opera GX", "120.0.5543.204"],
+    browser: ["ZapUnlocked API", "Opera GX", "120.0.5543.204"],
     printQRInTerminal: false,
     generateHighQualityLinkPreview: true,
     markOnlineOnConnect: true,
