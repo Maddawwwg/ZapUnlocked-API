@@ -18,9 +18,34 @@ let currentQR = null;
 // Store em memória para contatos recentes
 const store = makeInMemoryStore({});
 
+// Cache global de reações (messageId -> emoji)
+const reactionCache = new Map();
+
 // Limite de mensagens por chat no store para economizar RAM
 const MAX_MESSAGES_PER_CHAT = 100;
-const MAX_CHATS_IN_STORE = 2000; // Proteção contra estouro com 10k contatos (mantém os mais recentes)
+const MAX_CHATS_IN_STORE = 2000;
+const MAX_REACTIONS_IN_CACHE = 5000; // Limite para evitar estouro de memória
+
+/**
+ * Armazena uma reação no cache global
+ */
+function storeReaction(targetId, emoji) {
+    if (!targetId) return;
+
+    // Se o emoji for vazio, a reação foi removida
+    if (!emoji) {
+        reactionCache.delete(targetId);
+        return;
+    }
+
+    // Gerenciamento de memória do cache
+    if (reactionCache.size >= MAX_REACTIONS_IN_CACHE) {
+        const firstKey = reactionCache.keys().next().value;
+        reactionCache.delete(firstKey);
+    }
+
+    reactionCache.set(targetId, emoji);
+}
 
 /**
  * Pruna o store para evitar consumo excessivo de RAM
@@ -30,9 +55,6 @@ function pruneStore() {
         const chats = store.chats.all();
         if (chats.length > MAX_CHATS_IN_STORE) {
             logger.log(`🧹 Prunando store: ${chats.length} chats detectados. Limitando para ${MAX_CHATS_IN_STORE}...`);
-            // Remove os chats mais antigos se necessário (Baileys store.chats é um SimpleStore)
-            // Aqui podemos apenas limpar se for crítico, mas o Baileys gerencia o array.
-            // O maior vilão é o store.messages.
         }
 
         // Limpa mensagens antigas de todos os chats no store
@@ -70,6 +92,18 @@ async function startBot() {
             logger.log("💾 Credenciais do WhatsApp atualizadas/salvas");
         });
 
+        // Captura reações via evento dedicado (messages.reaction)
+        sock.ev.on("messages.reaction", (reactions) => {
+            for (const r of reactions) {
+                const targetId = r.reaction?.key?.id;
+                const emoji = r.reaction?.text;
+                if (targetId) {
+                    storeReaction(targetId, emoji);
+                    // logger.log(`🎭 Reação capturada (evento): ${emoji} para msg ${targetId}`);
+                }
+            }
+        });
+
         sock.ev.on("connection.update", async (update) => {
             const { connection, lastDisconnect, qr } = update;
 
@@ -101,6 +135,17 @@ async function startBot() {
         });
 
         sock.ev.on("messages.upsert", async (msgUpsert) => {
+            // Também captura reações que chegam como mensagens normais (reactionMessage)
+            for (const m of msgUpsert.messages) {
+                const reaction = m.message?.reactionMessage;
+                if (reaction) {
+                    const targetId = reaction.key?.id;
+                    const emoji = reaction.text;
+                    storeReaction(targetId, emoji);
+                    // logger.log(`🎭 Reação capturada (upsert): ${emoji} para msg ${targetId}`);
+                }
+            }
+
             await handleMessage(sock, msgUpsert);
             pruneStore(); // Limpa RAM após novas mensagens
         });
@@ -160,5 +205,6 @@ module.exports = {
     getSock: () => sock,
     isReady: () => isReady,
     getQR: () => currentQR,
-    getStore: () => store
+    getStore: () => store,
+    getReactionCache: () => reactionCache
 };

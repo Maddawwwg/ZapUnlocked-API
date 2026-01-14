@@ -94,9 +94,14 @@ async function fetchMessages(jid, limit = 20, type = "all") {
         };
     });
 
-    // Associa as reações às mensagens
+    // Associa as reações às mensagens (usa o cache global + local)
+    const globalReactionCache = client.getReactionCache();
     processedMessages.forEach(m => {
-        if (reactionMap[m.id]) {
+        // Prioridade para o que está no cache global (mais confiável em tempo real)
+        const cachedReaction = globalReactionCache.get(m.id);
+        if (cachedReaction) {
+            m.reaction = cachedReaction;
+        } else if (reactionMap[m.id]) {
             m.reaction = reactionMap[m.id];
         }
     });

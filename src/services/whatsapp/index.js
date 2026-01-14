@@ -26,5 +26,6 @@ module.exports = {
 
     // Reactions & Helpers
     sendReaction: sender.sendReaction,
-    findMessage: sender.findMessage
+    findMessage: sender.findMessage,
+    getReactionCache: client.getReactionCache
 };
