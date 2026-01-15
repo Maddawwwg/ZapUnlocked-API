@@ -7,7 +7,6 @@ const {
 const fs = require("fs");
 const path = require("path");
 const { AUTH_DIR, WHATSAPP_CONFIG, RECONNECT_DELAY } = require("../../config/constants");
-const { handleMessage } = require("../../handlers/messageHandler");
 const logger = require("../../utils/logger");
 const storage = require("./storage");
 
@@ -324,6 +323,7 @@ async function startBot() {
                 }
             }
 
+            const { handleMessage } = require("../../handlers/messageHandler");
             await handleMessage(sock, msgUpsert);
         });
     } catch (error) {

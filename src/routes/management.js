@@ -10,10 +10,10 @@ const { auth } = require("../middleware/auth");
 // Todas as rotas de gerenciamento requerem API KEY
 router.use(auth);
 
-router.post("/fetch_messages", fetchMessages);
-router.post("/recent_contacts", getRecentChats);
-router.get("/memory", getMemoryStats);
-router.get("/volume_stats", getVolumeStats);
-router.delete("/cleanup", clearStorage);
+router.post("/fetch_messages", (req, res) => require("../controllers/whatsapp/management/fetchMessages")(req, res));
+router.post("/recent_contacts", (req, res) => require("../controllers/whatsapp/management/getRecentChats")(req, res));
+router.get("/memory", (req, res) => require("../controllers/system/getMemoryStats")(req, res));
+router.get("/volume_stats", (req, res) => require("../controllers/system/getVolumeStats")(req, res));
+router.delete("/cleanup", (req, res) => require("../controllers/system/clearStorage")(req, res));
 
 module.exports = router;

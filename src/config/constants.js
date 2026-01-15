@@ -55,7 +55,8 @@ module.exports = {
       level: 'silent',
       log: () => { }, info: () => { }, error: () => { }, warn: () => { }, debug: () => { }, trace: () => { },
       child: function () { return this; }
-    }
+    },
+    msgRetryCounterCache: {} // Cache de retry vazio para evitar pre-alocação pesada
   },
   RECONNECT_DELAY: 5000
 };

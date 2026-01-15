@@ -1,31 +1,32 @@
-const client = require("./client");
-const sender = require("./sender");
-const fetcher = require("./messageFetcher");
+// Lazy load dependencies to save RAM on startup
+const getClient = () => require("./client");
+const getSender = () => require("./sender");
+const getFetcher = () => require("./messageFetcher");
 
 module.exports = {
     // Client Connection
-    startBot: client.startBot,
-    logout: client.logout,
-    getStatus: client.isReady,
-    getSocket: client.getSock,
-    getQRCode: client.getQR,
-    getStore: client.getStore,
+    startBot: (...args) => getClient().startBot(...args),
+    logout: (...args) => getClient().logout(...args),
+    getStatus: () => getClient().isReady(),
+    getSocket: () => getClient().getSock(),
+    getQRCode: () => getClient().getQR(),
+    getStore: () => getClient().getStore(),
 
     // Message Sending
-    sendMessage: sender.sendMessage,
-    sendButtonMessage: sender.sendButtonMessage,
-    sendImageMessage: sender.sendImageMessage,
-    sendAudioMessage: sender.sendAudioMessage,
-    sendVideoMessage: sender.sendVideoMessage,
-    sendDocumentMessage: sender.sendDocumentMessage,
-    sendStickerMessage: sender.sendStickerMessage,
+    sendMessage: (...args) => getSender().sendMessage(...args),
+    sendButtonMessage: (...args) => getSender().sendButtonMessage(...args),
+    sendImageMessage: (...args) => getSender().sendImageMessage(...args),
+    sendAudioMessage: (...args) => getSender().sendAudioMessage(...args),
+    sendVideoMessage: (...args) => getSender().sendVideoMessage(...args),
+    sendDocumentMessage: (...args) => getSender().sendDocumentMessage(...args),
+    sendStickerMessage: (...args) => getSender().sendStickerMessage(...args),
 
     // Management & History
-    fetchMessages: fetcher.fetchMessages,
-    getRecentChats: fetcher.getRecentChats,
+    fetchMessages: (...args) => getFetcher().fetchMessages(...args),
+    getRecentChats: (...args) => getFetcher().getRecentChats(...args),
 
     // Reactions & Helpers
-    sendReaction: sender.sendReaction,
-    findMessage: sender.findMessage,
-    getReactionCache: client.getReactionCache
+    sendReaction: (...args) => getSender().sendReaction(...args),
+    findMessage: (...args) => getSender().findMessage(...args),
+    getReactionCache: () => getClient().getReactionCache()
 };
