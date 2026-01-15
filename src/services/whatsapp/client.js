@@ -177,20 +177,25 @@ async function startBot() {
 
                     // Se existe config e está ATIVO
                     if (globalConfig && globalConfig.enabled) {
-                        // Extração simplificada de texto para o webhook
-                        const msgContent = m.message?.extendedTextMessage?.text ||
-                            m.message?.conversation ||
-                            m.message?.imageMessage?.caption ||
-                            m.message?.videoMessage?.caption || "";
+                        // Ignora mensagens enviadas por mim mesmo no webhook global
+                        if (m.key?.fromMe) {
+                            // logger.log("⏭️ Ignorando webhook global: mensagem enviada por mim.");
+                        } else {
+                            // Extração simplificada de texto para o webhook
+                            const msgContent = m.message?.extendedTextMessage?.text ||
+                                m.message?.conversation ||
+                                m.message?.imageMessage?.caption ||
+                                m.message?.videoMessage?.caption || "";
 
-                        // Dispara sem await para não bloquear o bot
-                        triggerWebhook(globalConfig, {
-                            from: phone,
-                            text: msgContent,
-                            phone: phone,
-                            id: m.key.id,
-                            timestamp: m.messageTimestamp
-                        }).catch(err => logger.error("Falha silenciosa no webhook global:", err.message));
+                            // Dispara sem await para não bloquear o bot
+                            triggerWebhook(globalConfig, {
+                                from: phone,
+                                text: msgContent,
+                                phone: phone,
+                                id: m.key.id,
+                                timestamp: m.messageTimestamp
+                            }).catch(err => logger.error("Falha silenciosa no webhook global:", err.message));
+                        }
                     }
                 } catch (err) {
                     logger.error("Erro na lógica do webhook global:", err.message);

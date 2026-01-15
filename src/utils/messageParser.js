@@ -49,6 +49,7 @@ function parseMessage(msg) {
  */
 function shouldIgnoreMessage(msg) {
   if (!msg || !msg.message) return true;
+  if (msg.key?.fromMe) return true; // Ignora mensagens enviadas por mim mesmo
   if (msg.message.protocolMessage?.type) return true;
   return false;
 }
