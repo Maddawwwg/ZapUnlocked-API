@@ -15,6 +15,15 @@ function createApp() {
   app.use(express.urlencoded({ limit: "5mb", extended: true }));
   app.set("json spaces", 2); // Pretty-print JSON responses
 
+  // Middlewares
+  const cors = require("cors");
+  app.use(cors({
+    origin: "*", // Permite qualquer origem (Open Source / API Pública)
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
+    credentials: true
+  }));
+
   // Middleware para capturar erros de JSON malformado
   app.use((err, req, res, next) => {
     if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
