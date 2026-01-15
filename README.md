@@ -1,4 +1,4 @@
-# 🚀 ZapUnlocked-API 📲✨
+# 🚀 [ZapUnlocked-API](https://zapdocs.kauafpss.qzz.io) 📲✨
 
 ![ZapUnlocked-API Banner](https://github.com/zKauaFerreira/ZapUnlocked-API/raw/refs/heads/documentation/images/hero-dark.svg)
 
@@ -17,27 +17,61 @@
 
 ---
 
-## <img src="https://github.com/lipis/flag-icons/raw/refs/heads/main/flags/4x3/br.svg" width="30"> O que é o ZapUnlocked-API?
+## <img src="https://github.com/lipis/flag-icons/raw/refs/heads/main/flags/4x3/br.svg" width="30"> O que é o [ZapUnlocked-API](https://zapdocs.kauafpss.qzz.io)?
 
-O **ZapUnlocked-API** é uma solução profissional, **100% gratuita e de código aberto**, projetada para transformar o WhatsApp em uma poderosa ferramenta de automação. Construída sobre o motor do **Baileys**, esta API oferece uma interface REST simples para gerenciar sessões, enviar mídias complexas e criar interações inteligentes sem a necessidade de um banco de dados pesado.
+O **[ZapUnlocked-API](https://zapdocs.kauafpss.qzz.io)** é uma solução profissional, **100% gratuita e de código aberto**, projetada para transformar o WhatsApp em uma poderosa ferramenta de automação. Construída sobre o motor do **Baileys**, esta API oferece uma interface REST simples para gerenciar sessões, enviar mídias complexas e criar interações inteligentes sem a necessidade de um banco de dados pesado.
 
 > [!TIP]
 > Perfeito para desenvolvedores que buscam agilidade na integração de bots, notificações e sistemas de atendimento automatizados.
 
 ---
 
-## 🚀 Principais Rotas
 
-- `GET /` - Status da API
+## 🚀 Funcionalidades em Destaque
+
+- **Botões Stateless**: Crie fluxos interativos sem precisar de banco de dados, com webhooks criptografados.
+- **Pareamento sem QR Code**: Conecte via código numérico, ideal para servidores sem interface gráfica ou câmeras.
+- **Conversão Automática de Áudio**: Envie áudios que aparecem como gravados na hora (PTT) nativamente no iOS e Android.
+- **Fila de Mídias Inteligente**: Gerenciamento automático para evitar o consumo excessivo de memória.
+- **Placeholders Dinâmicos**: Personalize mensagens e webhooks com variáveis como `{{name}}`, `{{day}}` e `{{phone}}`.
+
+---
+
+## 🛤️ Principais Rotas
+
+### 📨 Envio de Mensagens
 - `POST /send` - Enviar Mensagem de Texto
-- `POST /send_wbuttons` - Enviar Mensagem com Botão
+- `POST /send_reaction` - Enviar Reação com Emoji
+- `POST /send_wbuttons` - Enviar Mensagem com Botão (Stateless)
+- `POST /send_sticker` - Enviar Figurinha
 - `POST /send_image` - Enviar Imagem
-- `POST /send_audio` - Enviar Áudio
 - `POST /send_video` - Enviar Vídeo
+- `POST /send_audio` - Enviar Áudio (com conversão automática)
 - `POST /send_document` - Enviar Documento
-- `GET /qr` - Visualizar QR Code
-- `GET /qr/image` - Obter Imagem do QR Code
-- `POST /qr/logout` - Desconectar Sessão
+
+### 🔍 Consultas e Gestão
+- `POST /contacts/info` - Informações Detalhadas do Contato
+- `GET /fetch_messages` - Buscar Histórico de Mensagens
+- `GET /recent_contacts` - Listar Contatos Recentes
+- `GET /management/volume_stats` - Verificar Uso de Disco
+- `DELETE /management/cleanup` - Limpar Histórico de Mensagens
+
+### 🔗 Conexão e Sessão
+- `GET /status` - Status da Conexão e Sessão
+- `GET /qr` - Visualizar QR Code Interativo
+- `GET /qr/image` - Obter Imagem do QR Code (Base64)
+- `POST /qr/pair` - Gerar Código de Pareamento Numérico
+- `POST /qr/logout` - Desconectar e Resetar Sessão
+
+### 🪝 Webhooks (Globais)
+- `POST /webhook/config` - Configurar URL do Webhook
+- `POST /webhook/toggle` - Ativar/Desativar Recebimento
+- `DELETE /webhook/delete` - Remover Configuração
+
+### ⚙️ Perfil e Privacidade
+- `POST /settings/profile` - Alterar Nome e Foto do Bot
+- `POST /settings/privacy` - Ajustar Privacidade (Visto por último, etc)
+- `POST /settings/block` - Bloquear/Desbloquear Contato
 
 ---
 
@@ -62,7 +96,7 @@ Para documentação técnica detalhada, exemplos de código e playground interat
 
 Este projeto só é possível graças ao incrível trabalho da comunidade open-source:
 
-- **[Itsukichan](https://github.com/itsukichan/baileys)**: Pelo fantástico fork do Baileys que permite o uso de botões interativos.
+- **[Itsukichan](https://github.com/itsukichann/baileys)**: Pelo fantástico fork do Baileys que ajuda pela facilidade de criar funções seguindo a documentação.
 - **[Baileys (WhiskeySockets)](https://github.com/WhiskeySockets/Baileys)**: A biblioteca base que revolucionou a conexão com o WhatsApp.
 - **[Railway](https://railway.app/)**: Por disponibilizar infraestrutura gratuita de alta qualidade (1 vCPU, 0.5GB RAM e 500MB de armazenamento no plano Free).
 
@@ -74,4 +108,6 @@ Este projeto é licenciado sob a **Licença MIT**. Sinta-se à vontade para usar
 
 ---
 
-**Divirta-se automatizando com a ZapUnlocked-API!** 😎📱🚀
+Feito com 💜 por [Kauã Ferreira](https://www.instagram.com/kauafpss_/).
+
+**Divirta-se automatizando com a [ZapUnlocked-API](https://zapdocs.kauafpss.qzz.io)!** 😎📱🚀
