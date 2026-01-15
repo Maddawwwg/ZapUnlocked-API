@@ -66,7 +66,7 @@ async function sendAudioMessage(jid, audioPath, isPtt = false) {
     let waveform = undefined;
 
     try {
-        const { getAudioDuration, getAudioWaveform } = require("baileys-original");
+        const { getAudioDuration, getAudioWaveform } = require("@itsukichan/baileys");
         seconds = await getAudioDuration(buffer);
         waveform = await getAudioWaveform(buffer);
     } catch (err) {
