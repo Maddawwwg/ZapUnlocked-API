@@ -4,8 +4,8 @@
   "main": "app.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node app.js",
-    "dev": "node app.js"
+    "start": "node --expose-gc app.js",
+    "dev": "node --expose-gc app.js"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",

@@ -16,8 +16,55 @@ let sock = null;
 let isReady = false;
 let currentQR = null;
 
-// Store em memória (mantido para contatos e metadados, mas mensagens vão para storage)
-const store = makeInMemoryStore({});
+// Store custom ultraleve para evitar o overhead do Baileys InMemoryStore (que guarda tudo)
+const store = {
+    contacts: {},
+    chats: {
+        all: () => Object.values(store.contacts),
+        get: (id) => store.contacts[id],
+        upsert: (chats) => {
+            for (const chat of chats) {
+                if (!chat.id) continue;
+                store.contacts[chat.id] = { ...store.contacts[chat.id], ...chat };
+            }
+        }
+    },
+    upsertContacts: (contacts) => {
+        for (const contact of contacts) {
+            const id = contact.id || contact.jid;
+            if (!id) continue;
+            // Guardamos apenas o essencial para identificar nomes nos logs e webhooks
+            store.contacts[id] = {
+                id,
+                name: contact.name || contact.verifiedName || contact.notify || store.contacts[id]?.name,
+                notify: contact.notify || store.contacts[id]?.notify,
+                imgUrl: contact.imgUrl || store.contacts[id]?.imgUrl
+            };
+        }
+    }
+};
+
+/**
+ * Watchdog de Memória: Tenta manter o consumo sob controle
+ */
+function startMemoryWatchdog() {
+    setInterval(() => {
+        const used = process.memoryUsage().rss / 1024 / 1024;
+
+        // Se passar de 150MB, limpa caches e tenta forçar GC
+        if (used > 150) {
+            logger.log(`⚠️ Memória alta detectada (${used.toFixed(2)}MB). Limpando caches...`);
+            reactionCache.clear();
+
+            if (global.gc) {
+                global.gc();
+                logger.log("🧹 Garbage Collector executado com sucesso.");
+            }
+        }
+    }, 1000 * 60 * 5); // A cada 5 minutos
+}
+
+startMemoryWatchdog();
 
 // Cache global de reações (messageId -> emoji)
 const reactionCache = new Map();
@@ -152,6 +199,13 @@ async function startBot() {
 
                 // Ignora status/broadcasts
                 if (jid === "status@broadcast") continue;
+
+                // Ignora mensagens do próprio bot (mensagens enviadas por você para você mesmo)
+                const myJid = sock.user?.id?.split(":")[0] + "@s.whatsapp.net";
+                if (jid === myJid) continue;
+
+                // Ignora protocolMessage (mensagens técnicas de sincronismo/status internas do Baileys)
+                if (m.message?.protocolMessage) continue;
 
                 // Tenta lidar com LID (Linked Device)
                 if (jid.includes("@lid")) {
