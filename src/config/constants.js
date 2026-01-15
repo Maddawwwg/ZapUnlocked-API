@@ -50,7 +50,12 @@ module.exports = {
     shouldSyncHistoryMessage: () => false, // Desativa sync de histórico
     cachedGroupMetadata: false, // Reduz uso de RAM ignorando cache de grupos
     recvBatchMsg: false, // Processa mensagens uma a uma para não sobrecarregar
-    shouldIgnoreJid: (jid) => jid.includes("@broadcast") // Ignora status e listas de transmissão
+    shouldIgnoreJid: (jid) => jid.includes("@broadcast"), // Ignora status e listas de transmissão
+    logger: {
+      level: 'silent',
+      log: () => { }, info: () => { }, error: () => { }, warn: () => { }, debug: () => { }, trace: () => { },
+      child: function () { return this; }
+    }
   },
   RECONNECT_DELAY: 5000
 };

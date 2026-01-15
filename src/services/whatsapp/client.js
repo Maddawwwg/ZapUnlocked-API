@@ -2,8 +2,7 @@ const {
     default: makeWASocket,
     useMultiFileAuthState,
     fetchLatestBaileysVersion,
-    DisconnectReason,
-    makeInMemoryStore
+    DisconnectReason
 } = require("@itsukichan/baileys");
 const fs = require("fs");
 const path = require("path");
@@ -65,6 +64,17 @@ function startMemoryWatchdog() {
 }
 
 startMemoryWatchdog();
+
+// Gatilho de Garbage Collection inicial após 15 segundos do boot do app
+// Isso limpa o overhead de carregamento de módulos iniciais
+setTimeout(() => {
+    if (global.gc) {
+        try {
+            global.gc();
+            logger.log("🧹 Memória de boot otimizada (GC Inicial executado)");
+        } catch (e) { }
+    }
+}, 15000);
 
 // Cache global de reações (messageId -> emoji)
 const reactionCache = new Map();
@@ -174,6 +184,17 @@ async function startBot() {
                 isReady = true;
                 currentQR = null;
                 logger.log("✅ WhatsApp conectado e pronto");
+
+                // Gatilho de Garbage Collection após estabilizar a conexão
+                // Isso ajuda a limpar os buffers e objetos grandes gerados durante o login
+                setTimeout(() => {
+                    if (global.gc) {
+                        try {
+                            global.gc();
+                            logger.log("🧹 Memória otimizada após conexão (GC executado)");
+                        } catch (e) { }
+                    }
+                }, 15000); // 15 segundos após abrir
             }
 
             if (connection === "close") {
