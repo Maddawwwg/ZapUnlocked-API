@@ -26,11 +26,13 @@ exports.updateMyProfile = async (req, res) => {
 
         if (newProfilePictureUrl) {
             // 1. Usa o serviço existente para baixar a mídia com segurança
-            // O downloader retorna o caminho do arquivo salvo em TEMP_DIR
             tempFilePath = await downloadMedia(newProfilePictureUrl);
 
-            // 2. Atualiza a foto usando o arquivo local
-            await sock.updateProfilePicture(botJid, { url: tempFilePath });
+            // 2. Lê o arquivo para um Buffer (mais robusto que passar a URL no Baileys)
+            const imageBuffer = fs.readFileSync(tempFilePath);
+
+            // 3. Atualiza a foto usando o Buffer
+            await sock.updateProfilePicture(botJid, imageBuffer);
 
             updates.push(`Foto de perfil atualizada.`);
         }
